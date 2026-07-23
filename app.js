@@ -102,6 +102,9 @@
         loadingModalObj = new bootstrap.Modal(document.getElementById('loadingModal'));
         successModalObj = new bootstrap.Modal(document.getElementById('successModal'));
       }
+
+      // 5-second real-time sync polling
+      setInterval(loadMasterDataInstant, 5000);
     });
 
     // INSTANT MASTER DATA APPLIER
@@ -132,27 +135,40 @@
       });
 
       const grn = state.masterData.nextGrnNo || 'RKD/GRN/2026/2173';
-      document.getElementById('grnNoDisplay').value = grn;
-      document.getElementById('top-grn-span').innerText = grn;
+      if (!state.editMode) {
+        document.getElementById('grnNoDisplay').value = grn;
+        document.getElementById('top-grn-span').innerText = grn;
+      }
     }
 
     function loadMasterDataInstant() {
-      // 1. Read local cache immediately
+      // 1. Read local cache immediately (only on first load)
       const cached = localStorage.getItem(CACHE_KEY_MASTER);
-      if (cached) {
+      if (cached && !window.hasLoadedCache) {
         try {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.poList) {
             applyMasterDataToUI(parsed);
           }
         } catch(e) {}
+        window.hasLoadedCache = true;
       }
 
       // 2. Background refresh for seamless sync
       callBackend('getInitialMasterData').then(res => {
         if (res.status === 'success') {
-          localStorage.setItem(CACHE_KEY_MASTER, JSON.stringify(res.data));
-          applyMasterDataToUI(res.data);
+          const newDataStr = JSON.stringify(res.data);
+          const oldDataStr = localStorage.getItem(CACHE_KEY_MASTER);
+          
+          if (oldDataStr !== newDataStr) {
+            localStorage.setItem(CACHE_KEY_MASTER, newDataStr);
+            applyMasterDataToUI(res.data);
+            
+            // Re-render history table if visible
+            if (document.getElementById('main-history-view').style.display !== 'none' && typeof renderHistoryTable === 'function') {
+              renderHistoryTable();
+            }
+          }
         } else {
           console.error('Backend Error in getInitialMasterData:', res.message, res.stack);
           // Only alert if we don't have cached poList, so we don't annoy the user if it's a silent background sync failure
