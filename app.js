@@ -536,53 +536,32 @@
         photoBase64: state.photoBase64
       };
 
-      try {
-        const actionName = state.editMode ? 'updateInwardEntry' : 'saveInwardEntry';
-        const res = await callBackend(actionName, [payload]);
+      const actionName = state.editMode ? 'updateInwardEntry' : 'saveInwardEntry';
+      const grnNoToDisplay = payload.header.grnNo;
+
+      // BACKGROUND FIRE AND FORGET
+      callBackend(actionName, [payload]).then(res => {
+        console.log("Background processing finished:", res);
+        // Force a background sync of history so the new entry shows up eventually
+        if (typeof loadMasterDataInstant === 'function') loadMasterDataInstant();
+      }).catch(err => {
+        console.error("Background error:", err);
+      });
+
+      // OPTIMISTIC UI: Show success instantly to unblock user
+      setTimeout(() => {
         if (loadingModalObj) loadingModalObj.hide();
 
-        if (res.status === 'success') {
-          // IF waStatus is present, log it or alert it to help debug
-          if (res.waStatus) {
-            console.log("WhatsApp Status: ", res.waStatus);
-            alert("WhatsApp Debug: " + res.waStatus);
-          }
-          document.getElementById('success-grn-badge').innerText = res.grnNo;
+        document.getElementById('success-grn-badge').innerText = grnNoToDisplay;
 
-          const photoBtn = document.getElementById('success-photo-btn');
-          if (res.photoUrl) {
-            photoBtn.href = res.photoUrl;
-            photoBtn.style.display = 'flex';
-          } else {
-            photoBtn.style.display = 'none';
-          }
+        // Hide the links since backend is still processing them
+        document.getElementById('success-photo-btn').style.display = 'none';
+        document.getElementById('success-pdf-btn').style.display = 'none';
+        document.getElementById('success-sheet-btn').style.display = 'none';
 
-          const pdfBtn = document.getElementById('success-pdf-btn');
-          if (res.pdfUrl) {
-            pdfBtn.href = res.pdfUrl;
-            pdfBtn.style.display = 'flex';
-          } else {
-            pdfBtn.style.display = 'none';
-          }
-
-          const sheetBtn = document.getElementById('success-sheet-btn');
-          if (res.sheetUrl) {
-            sheetBtn.href = res.sheetUrl;
-            sheetBtn.style.display = 'flex';
-          } else {
-            sheetBtn.style.display = 'none';
-          }
-
-          if (successModalObj) successModalObj.show();
-          else showToast(`Inward Entry saved! GRN: ${res.grnNo}`, 'success');
-
-        } else {
-          showToast(res.message || 'Save error', 'error');
-        }
-      } catch (err) {
-        if (loadingModalObj) loadingModalObj.hide();
-        showToast('Error saving: ' + err, 'error');
-      }
+        if (successModalObj) successModalObj.show();
+        else showToast(`Inward Entry saved! GRN: ${grnNoToDisplay}`, 'success');
+      }, 700); // Small 700ms delay to show "Processing..." briefly
     }
 
     function resetFormAndCloseSuccessModal() {
