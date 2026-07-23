@@ -480,6 +480,11 @@
         return;
       }
 
+      if (!state.editMode && !state.photoBase64) {
+        showToast('Please attach a Gate Entry Photo before submitting.', 'error');
+        return;
+      }
+
       document.getElementById('confirm-grn').innerText = state.editMode ? state.editGrnNo : state.masterData.nextGrnNo;
       document.getElementById('confirm-po').innerText = document.getElementById('vendorPoNumber').value || '-';
       document.getElementById('confirm-invoice').innerText = document.getElementById('vendorInvoiceNumber').value || '-';
