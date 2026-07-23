@@ -275,6 +275,16 @@
         </div>
 
       </div>
+      
+      <!-- LATEST ENTRY LINKS (Dynamically updated via backend background process) -->
+      <style>
+        @keyframes blinkBackground {
+          0% { box-shadow: 0 4px 15px rgba(106, 27, 154, 0.2); transform: scale(1); }
+          50% { box-shadow: 0 4px 25px rgba(106, 27, 154, 0.8); transform: scale(1.01); }
+          100% { box-shadow: 0 4px 15px rgba(106, 27, 154, 0.2); transform: scale(1); }
+        }
+      </style>
+      <div id="latest-entry-links-container" style="display:none; transition: all 0.3s ease;"></div>
     </form>
 
     <!-- History View with Dependent Filters & Last 500 Entries Limit -->

@@ -542,6 +542,9 @@
       // BACKGROUND FIRE AND FORGET
       callBackend(actionName, [payload]).then(res => {
         console.log("Background processing finished:", res);
+        if (typeof showLatestEntryLinks === 'function') {
+          showLatestEntryLinks(res, grnNoToDisplay);
+        }
         // Force a background sync of history so the new entry shows up eventually
         if (typeof loadMasterDataInstant === 'function') loadMasterDataInstant();
       }).catch(err => {
@@ -551,17 +554,60 @@
       // OPTIMISTIC UI: Show success instantly to unblock user
       setTimeout(() => {
         if (loadingModalObj) loadingModalObj.hide();
-
-        document.getElementById('success-grn-badge').innerText = grnNoToDisplay;
-
-        // Hide the links since backend is still processing them
-        document.getElementById('success-photo-btn').style.display = 'none';
-        document.getElementById('success-pdf-btn').style.display = 'none';
-        document.getElementById('success-sheet-btn').style.display = 'none';
-
-        if (successModalObj) successModalObj.show();
-        else showToast(`Inward Entry saved! GRN: ${grnNoToDisplay}`, 'success');
+        showToast(`Inward Entry saved! GRN: ${grnNoToDisplay}`, 'success');
+        resetFormOptimistically();
       }, 700); // Small 700ms delay to show "Processing..." briefly
+    }
+
+    function showLatestEntryLinks(res, grnNo) {
+      if(res.status !== 'success') return;
+      
+      const container = document.getElementById('latest-entry-links-container');
+      if(!container) return;
+      
+      let html = `<div style="background: linear-gradient(45deg, #6a1b9a, #8e24aa); padding: 15px; border-radius: 12px; color: white; margin-top: 20px; box-shadow: 0 4px 15px rgba(106, 27, 154, 0.4); animation: blinkBackground 2.5s infinite;">`;
+      html += `<h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 700;"><i class="fa-solid fa-bolt text-warning me-2"></i>Background Process Finished for ${grnNo}!</h4>`;
+      html += `<div style="display: flex; gap: 10px; flex-wrap: wrap;">`;
+      
+      if(res.photoUrl) html += `<a href="${res.photoUrl}" target="_blank" style="background: white; color: #6a1b9a; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fa-solid fa-image me-1"></i> Invoice Photo</a>`;
+      
+      if(res.pdfUrl) html += `<a href="${res.pdfUrl}" target="_blank" style="background: white; color: #6a1b9a; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fa-solid fa-file-pdf me-1"></i> Goods Receipt Note</a>`;
+      
+      if(res.sheetUrl) html += `<a href="${res.sheetUrl}" target="_blank" style="background: white; color: #6a1b9a; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fa-solid fa-table me-1"></i> Sheet Record</a>`;
+      
+      html += `</div></div>`;
+      
+      container.innerHTML = html;
+      container.style.display = 'block';
+    }
+
+    function resetFormOptimistically() {
+      if (successModalObj) successModalObj.hide();
+      document.getElementById('main-inward-form').reset();
+      removePhoto();
+      
+      state.editMode = false;
+      state.editGrnNo = null;
+      
+      const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
+      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit Inward Entry';
+
+      renderItemsTable([]);
+      
+      // Optimitically increment GRN NO
+      if (state.masterData && state.masterData.nextGrnNo) {
+        const match = state.masterData.nextGrnNo.match(/\d+$/);
+        if(match) {
+          const num = parseInt(match[0]) + 1;
+          const newGrn = state.masterData.nextGrnNo.replace(/\d+$/, num);
+          state.masterData.nextGrnNo = newGrn;
+          document.getElementById('grnDisplayBtn').innerText = newGrn;
+          document.getElementById('top-grn-span').innerText = newGrn;
+        }
+      }
+      
+      // Do a silent reload of master data in the background without UI spin
+      loadMasterDataInstant(true); // Assuming true flag makes it completely silent
     }
 
     function resetFormAndCloseSuccessModal() {
