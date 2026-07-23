@@ -291,7 +291,7 @@
       }
     }
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycby5_H9NMyqD2DJ2i2NqgwHoZ9uR_k2GE39VC4s_q2LkAjXCYpuriV5u9cZnIbg6NpOVRg/exec'; // Web App URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyqheUf2jtuJssJksfLJc6KFPFnPLAQPixPJ8wfjluv7H67ey9J9jqeyj9ajVMiahhYNg/exec'; // Web App URL
 
     function switchTab(tab) {
       document.getElementById('main-inward-form').style.display = tab === 'form' ? 'block' : 'none';
