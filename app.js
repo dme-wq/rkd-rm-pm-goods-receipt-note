@@ -396,6 +396,24 @@
         return;
       }
 
+      const unitsList = (state.masterData && state.masterData.units) ? state.masterData.units : ['Kg', 'Meter', 'Piece'];
+      const generateUnitOptions = (selectedUnit) => {
+        let options = '';
+        let found = false;
+        unitsList.forEach(u => {
+          if (String(u).trim().toLowerCase() === String(selectedUnit).trim().toLowerCase()) {
+            options += `<option value="${u}" selected>${u}</option>`;
+            found = true;
+          } else {
+            options += `<option value="${u}">${u}</option>`;
+          }
+        });
+        if (selectedUnit && !found) {
+          options += `<option value="${selectedUnit}" selected>${selectedUnit}</option>`;
+        }
+        return options;
+      };
+
       let html = '';
       items.forEach((item, index) => {
         html += `
@@ -420,9 +438,7 @@
             </td>
             <td>
               <select class="form-control table-input" id="storeUnit_${index}" onchange="updateItemState(${index})">
-                <option value="Kg" ${item.storeUnit === 'Kg' ? 'selected' : ''}>Kg</option>
-                <option value="Meter" ${item.storeUnit === 'Meter' ? 'selected' : ''}>Meter</option>
-                <option value="Piece" ${item.storeUnit === 'Piece' ? 'selected' : ''}>Piece</option>
+                ${generateUnitOptions(item.storeUnit || item.poUnits)}
               </select>
             </td>
             <td>
@@ -430,9 +446,7 @@
             </td>
             <td>
               <select class="form-control table-input" id="priceUnit_${index}" onchange="updateItemState(${index})">
-                <option value="Kg" ${item.priceUnit === 'Kg' ? 'selected' : ''}>Kg</option>
-                <option value="Meter" ${item.priceUnit === 'Meter' ? 'selected' : ''}>Meter</option>
-                <option value="Piece" ${item.priceUnit === 'Piece' ? 'selected' : ''}>Piece</option>
+                ${generateUnitOptions(item.priceUnit || item.poUnits)}
               </select>
             </td>
           </tr>
