@@ -571,11 +571,16 @@
       
       state.editMode = false;
       state.editGrnNo = null;
-      document.getElementById('grnDisplayBtn').innerText = state.masterData ? state.masterData.nextGrnNo : 'Loading...';
+      document.getElementById('grnDisplayBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
+      document.getElementById('top-grn-span').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
+      
       const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
       if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit Inward Entry';
 
       renderItemsTable([]);
+      
+      // Force a real-time fresh fetch by clearing the cache
+      localStorage.removeItem(CACHE_KEY_MASTER);
       loadMasterDataInstant();
     }
 
