@@ -526,6 +526,11 @@
         if (loadingModalObj) loadingModalObj.hide();
 
         if (res.status === 'success') {
+          // IF waStatus is present, log it or alert it to help debug
+          if (res.waStatus) {
+            console.log("WhatsApp Status: ", res.waStatus);
+            alert("WhatsApp Debug: " + res.waStatus);
+          }
           document.getElementById('success-grn-badge').innerText = res.grnNo;
 
           const photoBtn = document.getElementById('success-photo-btn');
