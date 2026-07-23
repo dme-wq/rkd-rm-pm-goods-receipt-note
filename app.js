@@ -392,7 +392,7 @@
       document.getElementById('item-count-badge').innerText = `${items ? items.length : 0} items selected`;
 
       if (!items || items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="14" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Please select a Vendor PO Number to display line items.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Please select a Vendor PO Number to display line items.</td></tr>`;
         return;
       }
 
@@ -400,6 +400,9 @@
       items.forEach((item, index) => {
         html += `
           <tr>
+            <td style="text-align:center; vertical-align:middle;">
+              <input type="checkbox" class="item-select-cb" id="selectItem_${index}" ${items.length === 1 ? 'checked disabled' : 'checked'} onchange="updateItemState(${index})" style="transform: scale(1.4); cursor: pointer;">
+            </td>
             <td><strong>${item.sNo}</strong></td>
             <td>${item.rmPmName}</td>
             <td style="font-family:monospace; font-size:0.85rem;">${item.productCode}</td>
@@ -452,11 +455,16 @@
 
     function updateItemState(index) {
       if (!state.currentPoItems[index]) return;
+      const cb = document.getElementById(`selectItem_${index}`);
+      state.currentPoItems[index].isSelected = cb ? cb.checked : true;
       state.currentPoItems[index].billChallanQty = parseFloat(document.getElementById(`billQty_${index}`).value) || 0;
       state.currentPoItems[index].storeQty = parseFloat(document.getElementById(`storeQty_${index}`).value) || 0;
       state.currentPoItems[index].storeUnit = document.getElementById(`storeUnit_${index}`).value;
       state.currentPoItems[index].billPrice = parseFloat(document.getElementById(`billPrice_${index}`).value) || 0;
       state.currentPoItems[index].priceUnit = document.getElementById(`priceUnit_${index}`).value;
+      
+      const selectedCount = state.currentPoItems.filter(item => item.isSelected !== false).length;
+      document.getElementById('item-count-badge').innerText = `${selectedCount} items selected`;
     }
 
     function copyAllBillToStoreQty() {
@@ -502,12 +510,18 @@
         return;
       }
 
+      const selectedItems = state.currentPoItems.filter(item => item.isSelected !== false);
+      if (!selectedItems.length) {
+        showToast('Please select at least one item from the table to submit.', 'error');
+        return;
+      }
+
       document.getElementById('confirm-grn').innerText = state.editMode ? state.editGrnNo : state.masterData.nextGrnNo;
       document.getElementById('confirm-po').innerText = document.getElementById('vendorPoNumber').value || '-';
       document.getElementById('confirm-invoice').innerText = document.getElementById('vendorInvoiceNumber').value || '-';
       document.getElementById('confirm-vendor').innerText = document.getElementById('vendorName').value || '-';
       document.getElementById('confirm-person').innerText = document.getElementById('receivingPerson').value || '-';
-      document.getElementById('confirm-items-count').innerText = `${state.currentPoItems.length} items`;
+      document.getElementById('confirm-items-count').innerText = `${selectedItems.length} items`;
       
       const photoStatus = state.photoBase64 ? '<span class="text-success"><i class="fa-solid fa-check-circle me-1"></i> Attached (Will save to Drive)</span>' : '<span class="text-muted">No photo attached</span>';
       document.getElementById('confirm-photo-status').innerHTML = photoStatus;
@@ -532,7 +546,7 @@
           receivingLocation: document.getElementById('receivingLocation').value,
           grnNo: state.editMode ? state.editGrnNo : state.masterData.nextGrnNo
         },
-        items: state.currentPoItems,
+        items: state.currentPoItems.filter(item => item.isSelected !== false),
         photoBase64: state.photoBase64
       };
 
