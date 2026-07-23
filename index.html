@@ -121,6 +121,7 @@
               <div class="form-group">
                 <label for="vendorPoNumber">
                   Select Vendor PO Number <span class="req">*</span>
+                  <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(वेंडर पीओ नंबर चुनें)</small>
                 </label>
                 <select id="vendorPoNumber" class="form-control" onchange="onPoSelectChange()" required>
                   <option value="">-- Select Vendor PO Number --</option>
@@ -130,6 +131,7 @@
               <div class="form-group">
                 <label for="vendorInvoiceNumber">
                   Select Vendor Bill/Invoice Number <span class="req">*</span>
+                  <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(वेंडर बिल/चालान नंबर चुनें)</small>
                 </label>
                 <select id="vendorInvoiceNumber" class="form-control" required>
                   <option value="">-- Select Invoice (Gate Entry) --</option>
@@ -137,17 +139,17 @@
               </div>
 
               <div class="form-group">
-                <label for="vendorName">Vendor Name (poDatabase)</label>
+                <label for="vendorName">Vendor Name (poDatabase) <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(वेंडर का नाम)</small></label>
                 <input type="text" id="vendorName" class="form-control" placeholder="Auto-fills upon PO selection" readonly>
               </div>
 
               <div class="form-group">
-                <label for="vendorPoDate">Vendor PO Date (poDatabase)</label>
+                <label for="vendorPoDate">Vendor PO Date (poDatabase) <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(पीओ की तारीख)</small></label>
                 <input type="text" id="vendorPoDate" class="form-control" placeholder="Auto-fills upon PO selection" readonly>
               </div>
 
               <div class="form-group" style="grid-column: span 2;">
-                <label for="vendorChallanNumber">Vendor Challan Number <span class="req">*</span></label>
+                <label for="vendorChallanNumber">Vendor Challan Number <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(वेंडर चालान नंबर)</small></label>
                 <input type="text" id="vendorChallanNumber" class="form-control" placeholder="e.g. CH-99042" required>
               </div>
 
@@ -176,19 +178,19 @@
                 <thead>
                   <tr>
                     <th style="width:45px;">S.No</th>
-                    <th>RM/PM Name</th>
-                    <th>Product Code</th>
-                    <th>Width (in)</th>
-                    <th>PO Qty</th>
-                    <th>PO Price</th>
-                    <th>Notes</th>
-                    <th>Pending Qty</th>
-                    <th>PO Unit</th>
-                    <th>Qty In Bill <span style="color:red">*</span></th>
-                    <th>Qty Store Rec <span style="color:red">*</span></th>
-                    <th>Unit Rec</th>
-                    <th>Bill Price</th>
-                    <th>Price Unit</th>
+                    <th>RM/PM Name<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(रॉ/पैकिंग मटेरियल)</small></th>
+                    <th>Product Code<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(प्रोडक्ट कोड/नाम)</small></th>
+                    <th>Width (in)<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(रोल की चौड़ाई)</small></th>
+                    <th>PO Qty<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(पीओ की मात्रा)</small></th>
+                    <th>PO Price<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(पीओ का मूल्य)</small></th>
+                    <th>Notes<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(टिप्पणी)</small></th>
+                    <th>Pending Qty<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(बकाया मात्रा)</small></th>
+                    <th>PO Unit<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(पीओ इकाई)</small></th>
+                    <th>Qty In Bill <span style="color:red">*</span><br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(बिल मात्रा)</small></th>
+                    <th>Qty Store Rec <span style="color:red">*</span><br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(स्टोर प्राप्त मात्रा)</small></th>
+                    <th>Unit Rec<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(स्टोर इकाई)</small></th>
+                    <th>Bill Price<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(बिल का मूल्य)</small></th>
+                    <th>Price Unit<br><small style="font-weight:400; font-size:0.85em; color:rgba(255,255,255,0.7);">(मूल्य इकाई)</small></th>
                   </tr>
                 </thead>
                 <tbody id="items-tbody">
@@ -240,31 +242,31 @@
             <div style="display:flex; flex-direction:column; gap: 1.25rem;">
               
               <div class="form-group">
-                <label for="inwardDate">Inward Date <span class="req">*</span></label>
+                <label for="inwardDate">Inward Date <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(आवक की तारीख)</small></label>
                 <input type="date" id="inwardDate" class="form-control" required>
               </div>
 
               <div class="form-group">
-                <label for="vendorInvoiceDate">Vendor Bill/Invoice Date</label>
+                <label for="vendorInvoiceDate">Vendor Bill/Invoice Date <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(बिल/चालान की तारीख)</small></label>
                 <input type="date" id="vendorInvoiceDate" class="form-control">
               </div>
 
               <div class="form-group">
-                <label for="receivingPerson">Receiving Person <span class="req">*</span></label>
+                <label for="receivingPerson">Receiving Person <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(सामान प्राप्त करने वाला व्यक्ति)</small></label>
                 <select id="receivingPerson" class="form-control" required>
                   <option value="">-- Select Receiving Person --</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="receivingLocation">Receiving Location <span class="req">*</span></label>
+                <label for="receivingLocation">Receiving Location <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(सामान प्राप्त करने का स्थान)</small></label>
                 <select id="receivingLocation" class="form-control" required>
                   <option value="">-- Select Location --</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="grnNoDisplay">Generated GRN No.</label>
+                <label for="grnNoDisplay">Generated GRN No. <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(जनरेटेड जीआरएन नंबर)</small></label>
                 <input type="text" id="grnNoDisplay" class="form-control" style="font-family:monospace; font-weight:700; color:var(--accent-primary);" readonly>
               </div>
 
