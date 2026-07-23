@@ -570,6 +570,9 @@
       padding: 12px 12px;
       border-bottom: 1px solid var(--border-color);
       vertical-align: middle;
+      white-space: normal;
+      word-wrap: break-word;
+      word-break: break-word;
     }
 
     .table-input {
