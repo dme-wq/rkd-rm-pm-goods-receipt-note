@@ -290,7 +290,8 @@
         icon.className = 'fa-solid fa-expand';
       }
     }
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwSudNMa5xJ2u9clUO8-0hAl2BIKYvJQUDA-mYalpcLu3tekcJtaqRiXYfYRyoCzneCGQ/exec'; // Web App URL
+
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxf9QZ-fvN50pHcPo7xYmCwPksoiNbLanNftssD7eINhtEIa6JUav6Fs-ZHdE-J8-Nkww/exec'; // Web App URL
 
     function switchTab(tab) {
       document.getElementById('main-inward-form').style.display = tab === 'form' ? 'block' : 'none';
