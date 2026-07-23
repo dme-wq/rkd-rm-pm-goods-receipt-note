@@ -403,42 +403,7 @@
     </div>
   </div>
 
-  <!-- POST-SUBMIT SUCCESS MODAL WITH DRIVE LINKS -->
-  <div class="modal fade" id="successModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="border-radius:24px; border:none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
-        <div class="modal-body p-5 text-center">
-          <div class="mb-4">
-            <div style="width: 80px; height: 80px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-              <i class="fa-solid fa-check text-success" style="font-size: 40px;"></i>
-            </div>
-          </div>
-          <h3 class="fw-bold mb-2" style="color: #0f172a;">Entry Saved Successfully!</h3>
-          <p class="text-muted mb-4">Your Inward Entry has been recorded. You can access the generated documents below.</p>
-          
-          <div class="mb-4">
-            <span class="grn-badge" style="font-size:1.2rem; padding:10px 24px; background: #f1f5f9; color: #1e293b; border: 1px dashed #cbd5e1;" id="success-grn-badge">RKD/GRN/2026/2173</span>
-          </div>
 
-          <div class="d-flex flex-column gap-3 mb-4">
-            <a id="success-pdf-btn" href="#" target="_blank" class="btn btn-outline-danger d-flex align-items-center justify-content-center p-3" style="border-radius: 12px; font-weight: 600; display: none;">
-              <i class="fa-solid fa-file-pdf me-2" style="font-size: 1.2rem;"></i> Download / View GRN PDF
-            </a>
-            <a id="success-photo-btn" href="#" target="_blank" class="btn btn-outline-primary d-flex align-items-center justify-content-center p-3" style="border-radius: 12px; font-weight: 600; display: none;">
-              <i class="fa-solid fa-image me-2" style="font-size: 1.2rem;"></i> View Gate Entry Photo
-            </a>
-            <a id="success-sheet-btn" href="#" target="_blank" class="btn btn-outline-success d-flex align-items-center justify-content-center p-3" style="border-radius: 12px; font-weight: 600; display: none;">
-              <i class="fa-solid fa-file-excel me-2" style="font-size: 1.2rem;"></i> Open Google Sheet Copy
-            </a>
-          </div>
-
-          <button type="button" class="btn btn-primary w-100 py-3 font-weight-bold" style="border-radius: 12px;" onclick="resetFormAndCloseSuccessModal()">
-            <i class="fa-solid fa-plus me-2"></i> Create New Inward Entry
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
