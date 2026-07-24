@@ -42,7 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadQCData(force = false, autoSelectGrn = null) {
   if (!force && state.pendingGRNs.length > 0) return;
   
-  document.getElementById('loading-state').style.display = 'flex';
+  if (!autoSelectGrn) {
+    document.getElementById('loading-state').style.display = 'flex';
+  } else {
+    // Instantly show skeleton form to avoid user wait time
+    document.getElementById('form-grn-title').innerText = autoSelectGrn;
+    document.getElementById('form-vendor-name').innerText = 'Loading details...';
+    document.getElementById('form-po-info').innerText = 'Syncing from server...';
+    document.getElementById('form-items-tags').innerHTML = '<span class="tag"><i class="fa-solid fa-spinner fa-spin"></i> Fetching items...</span>';
+    
+    // Temporary selected GRN so the form doesn't crash if they try to interact
+    state.selectedGRN = { grnNo: autoSelectGrn };
+    
+    document.getElementById('view-list').classList.remove('active-view');
+    document.getElementById('view-list').classList.add('slide-right');
+    document.getElementById('view-form').classList.remove('slide-right');
+    document.getElementById('view-form').classList.add('active-view');
+  }
+
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('cards-container').innerHTML = '';
   document.getElementById('pending-count').innerText = '...';
@@ -58,7 +75,14 @@ async function loadQCData(force = false, autoSelectGrn = null) {
       // Auto-open form if GRN parameter exists
       if (autoSelectGrn) {
         const target = state.pendingGRNs.find(g => g.grnNo === autoSelectGrn);
-        if (target) openForm(target);
+        if (target) {
+          openForm(target);
+        } else {
+          // If not found in pending, maybe it's already complete or invalid
+          document.getElementById('form-vendor-name').innerText = 'Entry Not Found';
+          document.getElementById('form-po-info').innerText = 'This GRN might already be completed.';
+          document.getElementById('form-items-tags').innerHTML = '<span class="tag" style="background:#fee2e2; color:#ef4444;">No pending items</span>';
+        }
       }
     } else {
       alert('Error loading data: ' + json.message);
