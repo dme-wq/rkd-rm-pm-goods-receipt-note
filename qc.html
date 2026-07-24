@@ -20,9 +20,14 @@
         <div class="header-sub">Dashboard</div>
       </div>
     </div>
-    <button class="btn-icon" onclick="loadQCData(true)" id="btn-refresh" title="Refresh">
-      <i class="fa-solid fa-rotate"></i>
-    </button>
+    <div style="display:flex; gap: 8px;">
+      <button class="btn-icon" onclick="openHistory()" title="Old Entries" style="width: auto; padding: 0 12px; border-radius: 8px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem;">
+        <i class="fa-solid fa-clock-rotate-left me-1"></i> History
+      </button>
+      <button class="btn-icon" onclick="loadQCData(true)" id="btn-refresh" title="Refresh">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
   </header>
 
   <!-- View: List -->
@@ -181,6 +186,30 @@
     <h2>Entry Submitted!</h2>
     <p>Quality Check recorded successfully.</p>
   </div>
+
+  <!-- View: History -->
+  <main id="view-history" class="view-container slide-right">
+    <header class="form-header">
+      <button class="btn-back" onclick="closeHistory()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div>
+        <div class="form-header-title">Old Entries</div>
+        <div class="form-header-sub">Completed Inspections</div>
+      </div>
+    </header>
+
+    <div class="history-filters">
+      <input type="text" id="history-search" class="filter-input" placeholder="Search by GRN..." oninput="filterHistory()">
+      <select id="history-person-filter" class="filter-select" onchange="filterHistory()">
+        <option value="">All Passing Persons</option>
+      </select>
+    </div>
+
+    <div id="history-cards-container" class="cards-list" style="padding-top: 14px;">
+      <!-- History cards go here -->
+    </div>
+  </main>
 
   <script src="qc.js"></script>
 </body>

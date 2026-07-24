@@ -5,10 +5,12 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwkaSNwh5s2wE8DJ-BfkWaW
 let state = {
   pendingGRNs: [],
   passingPersons: [],
+  completedQCs: [],
   selectedGRN: null,
   status: null,
   checklistUrl: null,
-  invoiceUrl: null
+  invoiceUrl: null,
+  photoBase64: null
 };
 
 async function callBackend(funcName, params = []) {
@@ -70,7 +72,9 @@ async function loadQCData(force = false, autoSelectGrn = null) {
     if (json.status === 'success') {
       state.pendingGRNs = json.data.pendingGRNs || [];
       state.passingPersons = json.data.passingPersons || [];
+      state.completedQCs = json.data.completedQCs || [];
       renderCards();
+      populateHistoryFilter();
       
       // Auto-open form if GRN parameter exists
       if (autoSelectGrn) {
@@ -376,4 +380,63 @@ async function submitForm() {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Entry';
   }
+  }
+}
+
+/* ─── History View Logic ─── */
+function openHistory() {
+  document.getElementById('view-list').classList.remove('active-view');
+  document.getElementById('view-list').classList.add('slide-right');
+  
+  document.getElementById('view-history').classList.remove('slide-right');
+  document.getElementById('view-history').classList.add('active-view');
+  
+  renderHistory();
+}
+
+function closeHistory() {
+  document.getElementById('view-history').classList.remove('active-view');
+  document.getElementById('view-history').classList.add('slide-right');
+  
+  document.getElementById('view-list').classList.remove('slide-right');
+  document.getElementById('view-list').classList.add('active-view');
+}
+
+function populateHistoryFilter() {
+  const select = document.getElementById('history-person-filter');
+  select.innerHTML = '<option value="">All Passing Persons</option>' + 
+    state.passingPersons.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+function filterHistory() {
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('history-cards-container');
+  const searchTxt = document.getElementById('history-search').value.toLowerCase();
+  const personFilter = document.getElementById('history-person-filter').value;
+  
+  let filtered = state.completedQCs.filter(qc => {
+    const matchSearch = qc.grnNo.toLowerCase().includes(searchTxt);
+    const matchPerson = personFilter === "" || qc.passingPerson === personFilter;
+    return matchSearch && matchPerson;
+  });
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">No completed entries found.</div>';
+    return;
+  }
+  
+  container.innerHTML = filtered.map(qc => `
+    <div class="history-card">
+      <div class="history-card-header">
+        <div class="history-grn">${qc.grnNo}</div>
+        <div class="history-badge"><i class="fa-solid fa-check"></i> ${qc.deliveryStatus || 'QC Done'}</div>
+      </div>
+      <div class="history-detail"><i class="fa-solid fa-user me-1" style="color:var(--primary-light)"></i> ${qc.passingPerson || 'N/A'}</div>
+      <div class="history-date"><i class="fa-solid fa-calendar me-1"></i> QC Time: ${qc.timestamp}</div>
+      ${qc.nextDeliveryDate ? `<div class="history-date" style="color:var(--warning)"><i class="fa-solid fa-truck-fast me-1"></i> Next Delivery: ${qc.nextDeliveryDate}</div>` : ''}
+    </div>
+  `).join('');
 }
