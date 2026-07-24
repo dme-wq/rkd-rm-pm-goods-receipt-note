@@ -103,8 +103,19 @@
         successModalObj = new bootstrap.Modal(document.getElementById('successModal'));
       }
 
-      // 5-second real-time sync polling
+      // Auto-open Inward Records on page load so data loads immediately
+      switchTab('history');
+
+      // 5-second master data sync polling
       setInterval(loadMasterDataInstant, 5000);
+
+      // 30-second auto-refresh for history when viewing it
+      setInterval(() => {
+        const historyView = document.getElementById('history-view');
+        if (historyView && historyView.style.display !== 'none') {
+          loadInwardHistory(false);
+        }
+      }, 30000);
     });
 
     // INSTANT MASTER DATA APPLIER
@@ -164,9 +175,10 @@
             localStorage.setItem(CACHE_KEY_MASTER, newDataStr);
             applyMasterDataToUI(res.data);
             
-            // Re-render history table if visible
-            if (document.getElementById('main-history-view').style.display !== 'none' && typeof renderHistoryTable === 'function') {
-              renderHistoryTable();
+            // Re-render history table if visible (FIXED: was 'main-history-view', correct ID is 'history-view')
+            const historyView = document.getElementById('history-view');
+            if (historyView && historyView.style.display !== 'none' && state.historyRecords.length > 0) {
+              applyHistoryFilters();
             }
           }
         } else {
@@ -307,12 +319,19 @@
       }
     }
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwwXpI293oPOuJEwip07KFm3sHXlzsQ3EIL1u_rJkBWPGIua-bDZ6ijF5XaCyO0TT7pJg/exec'; // Web App URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbydpyiSWMvBVNo-O3NKKdEOC_GRzv3MTPpQkmfqoBqOUzIpPQKpuVxdUk-_Ye3Vf4vg8g/exec'; // New Web App URL
 
     function switchTab(tab) {
       document.getElementById('main-inward-form').style.display = tab === 'form' ? 'block' : 'none';
       document.getElementById('history-view').style.display = tab === 'history' ? 'block' : 'none';
-      if (tab === 'history') loadInwardHistory();
+      if (tab === 'history') {
+        // Only reload if no data yet or explicitly requested
+        if (!state.historyRecords || state.historyRecords.length === 0) {
+          loadInwardHistory();
+        } else {
+          applyHistoryFilters();
+        }
+      }
     }
 
     async function callBackend(funcName, params = []) {
@@ -616,26 +635,31 @@
       
       state.editMode = false;
       state.editGrnNo = null;
+
+      // Remove edit mode badge
+      const editBadge = document.getElementById('edit-mode-badge');
+      if (editBadge) editBadge.style.display = 'none';
       
       const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
       if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit Inward Entry';
 
       renderItemsTable([]);
       
-      // Optimitically increment GRN NO
+      // Optimistically increment GRN NO
       if (state.masterData && state.masterData.nextGrnNo) {
         const match = state.masterData.nextGrnNo.match(/\d+$/);
         if(match) {
           const num = parseInt(match[0]) + 1;
           const newGrn = state.masterData.nextGrnNo.replace(/\d+$/, num);
           state.masterData.nextGrnNo = newGrn;
-          document.getElementById('grnDisplayBtn').innerText = newGrn;
           document.getElementById('top-grn-span').innerText = newGrn;
+          document.getElementById('grnNoDisplay').value = newGrn;
         }
       }
       
-      // Do a silent reload of master data in the background without UI spin
-      loadMasterDataInstant(true); // Assuming true flag makes it completely silent
+      // Silent reload of master data & history
+      loadMasterDataInstant();
+      loadInwardHistory(true);
     }
 
     function resetFormAndCloseSuccessModal() {
@@ -666,7 +690,15 @@
     // HIGH-SPEED HISTORY LOADING & DEPENDENT FILTERS
     async function loadInwardHistory(forceRefresh = false) {
       const tbody = document.getElementById('history-tbody');
-      tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding:2rem;">Loading last 500 records...</td></tr>';
+      if (!tbody) return;
+
+      // Show loading indicator
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:2rem;">
+        <div style="display:inline-flex; align-items:center; gap:10px; color:var(--text-muted);">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span>Loading last 500 records from Google Sheet...</span>
+        </div>
+      </td></tr>`;
       
       try {
         const res = await callBackend('getInwardHistory', [null, 500]);
@@ -674,10 +706,15 @@
           state.historyRecords = res.data || [];
           populateHistoryFilterDropdowns(state.historyRecords);
           applyHistoryFilters();
+        } else {
+          console.error('History load error:', res.message);
+          tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:red; padding:2rem;">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>Error loading history: ${res.message || 'Unknown error'}
+          </td></tr>`;
         }
       } catch (e) {
         console.error(e);
-        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red; padding:2rem;">Error loading history.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red; padding:2rem;"><i class="fa-solid fa-wifi me-2"></i>Network error loading history. Please refresh.</td></tr>';
       }
     }
 
@@ -735,50 +772,108 @@
 
     function editRecord(grnNo) {
       const records = state.historyRecords.filter(r => r.grnNo === grnNo);
-      if(!records.length) return;
+      if (!records.length) {
+        showToast('Record not found. Please refresh history.', 'error');
+        return;
+      }
       
       const header = records[0];
-      
+
+      // ── Vendor Details ──
       document.getElementById('vendorPoNumber').value = header.vendorPoNumber || '';
       document.getElementById('vendorName').value = header.vendorName || '';
-      
-      if(header.vendorPoDate) {
-        const poDate = new Date(header.vendorPoDate);
-        if(!isNaN(poDate)) document.getElementById('vendorPoDate').value = poDate.toISOString().split('T')[0];
+
+      // PO Date
+      if (header.vendorPoDate) {
+        try {
+          const poDate = new Date(header.vendorPoDate);
+          if (!isNaN(poDate)) document.getElementById('vendorPoDate').value = poDate.toISOString().split('T')[0];
+          else document.getElementById('vendorPoDate').value = header.vendorPoDate;
+        } catch(e) { document.getElementById('vendorPoDate').value = header.vendorPoDate || ''; }
       }
-      
-      document.getElementById('vendorInvoiceNumber').innerHTML = `<option value="${header.vendorInvoiceNumber}">${header.vendorInvoiceNumber}</option>`;
-      document.getElementById('vendorInvoiceNumber').value = header.vendorInvoiceNumber || '';
+
+      // Invoice Number — restore as editable option
+      const invSel = document.getElementById('vendorInvoiceNumber');
+      invSel.innerHTML = `<option value="${header.vendorInvoiceNumber || ''}">${header.vendorInvoiceNumber || '(No Invoice)'}</option>`;
+      invSel.value = header.vendorInvoiceNumber || '';
+
       document.getElementById('vendorChallanNumber').value = header.vendorChallanNumber || '';
-      
-      if(header.inwardDate) {
-        const inDate = new Date(header.inwardDate);
-        if(!isNaN(inDate)) document.getElementById('inwardDate').value = inDate.toISOString().split('T')[0];
+
+      // Inward Date
+      if (header.inwardDate) {
+        try {
+          const inDate = new Date(header.inwardDate);
+          if (!isNaN(inDate)) document.getElementById('inwardDate').value = inDate.toISOString().split('T')[0];
+          else document.getElementById('inwardDate').value = header.inwardDate;
+        } catch(e) { document.getElementById('inwardDate').value = header.inwardDate || ''; }
       }
-      
-      document.getElementById('receivingPerson').value = header.receivingPerson || '';
-      document.getElementById('receivingLocation').value = header.receivingLocation || '';
-      
-      state.currentPoItems = records.map(r => ({
-        sNo: r.sNo,
-        rmPmName: r.rmPmName,
-        productCode: r.productCode,
-        storeQty: parseFloat(r.storeQty) || 0,
-        storeUnit: r.storeUnit,
+
+      // Receiving fields
+      const personSel = document.getElementById('receivingPerson');
+      if (![...personSel.options].some(o => o.value === header.receivingPerson)) {
+        const opt = document.createElement('option');
+        opt.value = header.receivingPerson || '';
+        opt.text = header.receivingPerson || '';
+        personSel.appendChild(opt);
+      }
+      personSel.value = header.receivingPerson || '';
+
+      const locSel = document.getElementById('receivingLocation');
+      if (![...locSel.options].some(o => o.value === header.receivingLocation)) {
+        const opt = document.createElement('option');
+        opt.value = header.receivingLocation || '';
+        opt.text = header.receivingLocation || '';
+        locSel.appendChild(opt);
+      }
+      locSel.value = header.receivingLocation || '';
+
+      // ── Restore ALL item fields from history ──
+      state.currentPoItems = records.map((r, idx) => ({
+        sNo: r.sNo || (idx + 1),
+        rmPmName: r.rmPmName || '',
+        productCode: r.productCode || '',
+        widthOfRoll: r.widthOfRoll || '',
+        poQuantity: parseFloat(r.poQuantity) || 0,
+        poUnits: r.poUnits || r.storeUnit || '',
+        poPrice: parseFloat(r.poPrice) || 0,
+        notes: r.notes || '',
+        pendingQuantity: parseFloat(r.pendingQuantity) || 0,
         billChallanQty: parseFloat(r.billChallanQty) || 0,
-        notes: '' 
+        storeQty: parseFloat(r.storeQty) || 0,
+        storeUnit: r.storeUnit || '',
+        billPrice: parseFloat(r.billPrice) || 0,
+        priceUnit: r.priceUnit || r.storeUnit || '',
+        isSelected: true
       }));
       
       state.editMode = true;
       state.editGrnNo = grnNo;
-      
-      document.getElementById('grnDisplayBtn').innerText = grnNo + ' (EDITING)';
+
+      // Update GRN display
+      document.getElementById('top-grn-span').innerText = grnNo;
+      document.getElementById('grnNoDisplay').value = grnNo;
+
+      // Show edit mode badge
+      let editBadge = document.getElementById('edit-mode-badge');
+      if (editBadge) {
+        editBadge.style.display = 'inline-flex';
+        editBadge.innerText = `✏️ EDITING: ${grnNo}`;
+      }
+
+      // Update submit button text
       const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
-      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Update Inward Entry';
+      if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Update Inward Entry';
       
       renderItemsTable(state.currentPoItems);
-      switchTab('form');
-      showToast(`Editing GRN: ${grnNo}`, 'info');
+
+      // Switch to form tab
+      document.getElementById('main-inward-form').style.display = 'block';
+      document.getElementById('history-view').style.display = 'none';
+
+      showToast(`✏️ Editing GRN: ${grnNo} — ${records.length} item(s) loaded`, 'info');
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetHistoryFilters() {
