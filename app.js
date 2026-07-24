@@ -415,6 +415,9 @@
         return;
       }
 
+      // Sort items by S.No ascending (1, 2, 3...)
+      items.sort((a, b) => (parseInt(a.sNo, 10) || 0) - (parseInt(b.sNo, 10) || 0));
+
       const unitsList = (state.masterData && state.masterData.units) ? state.masterData.units : ['Kg', 'Meter', 'Piece'];
       const generateUnitOptions = (selectedUnit) => {
         let options = '';
@@ -838,6 +841,9 @@
       locSel.value = header.receivingLocation || '';
 
       // ── Restore ALL item fields from history ──
+      // Sort records by S.No ascending (1, 2, 3...)
+      records.sort((a, b) => (parseInt(a.sNo, 10) || 0) - (parseInt(b.sNo, 10) || 0));
+
       state.currentPoItems = records.map((r, idx) => ({
         sNo: r.sNo || (idx + 1),
         rmPmName: r.rmPmName || '',
