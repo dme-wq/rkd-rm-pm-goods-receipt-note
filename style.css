@@ -48,15 +48,16 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-text-size-adjust: 100%;
     }
 
-    /* CAPITALIZATION OF TEXT ACROSS ELEMENTS */
-    body label, 
-    body th, 
-    .card-title, 
-    .btn, 
-    .btn-save-pdf, 
-    .btn-nav-back, 
+    /* CAPITALIZATION */
+    body label,
+    body th,
+    .card-title,
+    .btn,
+    .btn-save-pdf,
+    .btn-nav-back,
     .btn-quick-action,
     .btn-fullscreen-toggle,
     .btn-action-sec,
@@ -66,7 +67,7 @@
       text-transform: capitalize;
     }
 
-    /* EDITABLE FIELDS HIGHLIGHT (SOFT YELLOW BACKGROUND & BORDER) */
+    /* EDITABLE FIELDS HIGHLIGHT */
     .form-control:not([readonly]):not([disabled]),
     select.form-control:not([disabled]),
     input.table-input:not([readonly]):not([disabled]),
@@ -105,13 +106,13 @@
       cursor: not-allowed;
     }
 
-    /* APPLE-STYLE LIGHT THEME LOGIN PASSCODE OVERLAY */
+    /* ─────────────────────────────────────────
+       PASSCODE SCREEN
+    ───────────────────────────────────────── */
     .passcode-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: #f5f5f7;
       z-index: 999999;
       display: flex;
@@ -174,6 +175,7 @@
       text-align: center;
       outline: none;
       transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-appearance: none;
     }
 
     .pin-digit-box:focus {
@@ -198,13 +200,16 @@
       40%, 80% { transform: translateX(10px); }
     }
 
-    /* Top Global Header Bar */
+    /* ─────────────────────────────────────────
+       TOP HEADER
+    ───────────────────────────────────────── */
     .top-header {
-      height: 74px;
+      height: 64px;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
-      padding: 0 2rem;
+      padding: 0 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -212,6 +217,7 @@
       top: 0;
       z-index: 100;
       box-shadow: var(--shadow-sm);
+      gap: 8px;
     }
 
     [data-theme="dark"] .top-header {
@@ -221,12 +227,12 @@
     .header-nav-left {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex: 1;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .btn-nav-back {
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border-color);
       background: var(--bg-card);
@@ -236,9 +242,10 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: var(--transition);
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .btn-nav-back:hover {
@@ -251,21 +258,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
+      min-width: 0;
     }
 
     .rkd-logo-centered {
-      height: 48px;
+      height: 40px;
       width: auto;
       object-fit: contain;
+      flex-shrink: 0;
     }
 
     .header-title-text {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #1e40af;
       letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     [data-theme="dark"] .header-title-text {
@@ -273,11 +285,11 @@
     }
 
     .header-right-actions {
-      flex: 1;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 14px;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
     /* Header Live Clock Badge */
@@ -285,14 +297,15 @@
       background: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 20px;
       font-family: 'Outfit', 'Inter', monospace, sans-serif;
       font-weight: 700;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
     }
 
     [data-theme="dark"] .header-clock-badge {
@@ -302,8 +315,8 @@
     }
 
     .theme-toggle-btn {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: 1px solid var(--border-color);
       background: var(--bg-card);
@@ -313,38 +326,46 @@
       align-items: center;
       justify-content: center;
       transition: var(--transition);
+      flex-shrink: 0;
     }
 
     .theme-toggle-btn:hover {
       transform: scale(1.05);
     }
 
-    /* Main Content Container */
+    /* ─────────────────────────────────────────
+       MAIN CONTENT CONTAINER
+    ───────────────────────────────────────── */
     .app-container {
       width: 100%;
       max-width: 100%;
-      padding: 1.5rem 2rem;
+      padding: 1.25rem 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
-    /* Banner Card Header */
+    /* ─────────────────────────────────────────
+       BANNER CARD
+    ───────────────────────────────────────── */
     .banner-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 1.25rem 2rem;
+      padding: 1rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       box-shadow: var(--shadow-md);
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .banner-title-group {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
 
     .grn-label-small {
@@ -358,15 +379,17 @@
       background: #eff6ff;
       color: #1e40af;
       border: 1.5px solid #3b82f6;
-      padding: 5px 14px;
+      padding: 5px 12px;
       border-radius: 8px;
       font-family: 'Outfit', 'Inter', monospace, sans-serif;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 2px 5px rgba(59, 130, 246, 0.15);
+      max-width: 100%;
+      overflow: hidden;
     }
 
     [data-theme="dark"] .grn-badge {
@@ -378,9 +401,10 @@
     .banner-badges {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       font-size: 0.825rem;
       color: var(--text-muted);
+      flex-wrap: wrap;
     }
 
     .badge-pill {
@@ -396,16 +420,18 @@
       background: var(--accent-success);
       color: #ffffff;
       border: none;
-      padding: 12px 24px;
+      padding: 11px 20px;
       border-radius: var(--radius-md);
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
       transition: var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn-save-pdf:hover {
@@ -413,38 +439,37 @@
       transform: translateY(-1px);
     }
 
-    /* Layout Grid */
+    /* ─────────────────────────────────────────
+       LAYOUT GRID (2-COLUMN → 1-COLUMN)
+    ───────────────────────────────────────── */
     .layout-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 1100px) {
-      .layout-grid {
-        grid-template-columns: 1fr;
-      }
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 1.25rem;
     }
 
     .main-column {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
       width: 100%;
+      min-width: 0;
     }
 
     .sidebar-column {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
-    /* Card Panels */
+    /* ─────────────────────────────────────────
+       CARD PANELS
+    ───────────────────────────────────────── */
     .card-panel {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 1.5rem;
+      padding: 1.25rem;
       box-shadow: var(--shadow-md);
       transition: var(--transition);
       width: 100%;
@@ -452,32 +477,34 @@
 
     .card-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
-    /* Filter Toolbar for History */
+    /* ─────────────────────────────────────────
+       FILTER TOOLBAR
+    ───────────────────────────────────────── */
     .filter-toolbar {
       background: var(--bg-card-header);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 1rem 1.25rem;
+      padding: 0.875rem 1rem;
       margin-bottom: 1rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
+      gap: 10px;
+      align-items: flex-end;
     }
 
     .filter-item {
       flex: 1;
-      min-width: 180px;
+      min-width: 160px;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -489,17 +516,13 @@
       color: var(--text-muted);
     }
 
-    /* Form Fields Grid */
+    /* ─────────────────────────────────────────
+       FORM FIELDS
+    ───────────────────────────────────────── */
     .form-grid-2col {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.25rem;
-    }
-
-    @media (max-width: 640px) {
-      .form-grid-2col {
-        grid-template-columns: 1fr;
-      }
     }
 
     .form-group {
@@ -529,6 +552,15 @@
       font-size: 0.9rem;
       outline: none;
       transition: var(--transition);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select.form-control {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
     }
 
     .form-control:focus {
@@ -536,38 +568,42 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
-    /* Items Table Styling */
+    /* ─────────────────────────────────────────
+       ITEMS TABLE
+    ───────────────────────────────────────── */
     .table-responsive {
       width: 100%;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      margin-top: 1rem;
+      margin-top: 0.75rem;
     }
 
     .items-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.875rem;
-      min-width: 1200px;
+      min-width: 1100px;
     }
 
     .items-table th {
       background: var(--bg-card-header);
       color: var(--text-muted);
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       letter-spacing: 0.03em;
-      padding: 14px 14px;
+      padding: 12px 12px;
       border-bottom: 1.5px solid var(--border-color);
       text-align: left;
       position: sticky;
       top: 0;
       z-index: 10;
+      white-space: nowrap;
     }
 
     .items-table td {
-      padding: 12px 12px;
+      padding: 10px 12px;
       border-bottom: 1px solid var(--border-color);
       vertical-align: middle;
       white-space: normal;
@@ -576,23 +612,24 @@
     }
 
     .table-input {
-      height: 46px !important;
-      padding: 0 12px !important;
-      font-size: 0.95rem !important;
+      height: 42px !important;
+      padding: 0 10px !important;
+      font-size: 0.9rem !important;
       font-weight: 600 !important;
       border-radius: var(--radius-sm) !important;
       width: 100%;
-      min-width: 110px;
+      min-width: 100px;
+      -webkit-appearance: none;
     }
 
     .table-input[type="number"] {
-      min-width: 125px;
+      min-width: 110px;
     }
 
     .btn-quick-action {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 8px 14px;
+      padding: 7px 12px;
       border-radius: var(--radius-sm);
       border: 1px solid #10b981;
       background: rgba(16, 185, 129, 0.1);
@@ -600,7 +637,8 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
     }
 
     .btn-quick-action:hover {
@@ -609,9 +647,9 @@
     }
 
     .btn-fullscreen-toggle {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 8px 14px;
+      padding: 7px 12px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--accent-primary);
       background: rgba(59, 130, 246, 0.1);
@@ -619,7 +657,8 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
     }
 
     .btn-fullscreen-toggle:hover {
@@ -637,53 +676,56 @@
       z-index: 9999 !important;
       border-radius: 0 !important;
       overflow-y: auto !important;
-      padding: 2rem !important;
+      padding: 1.25rem !important;
       background: var(--bg-card) !important;
       box-shadow: none !important;
     }
 
     .card-panel.table-fullscreen .table-responsive {
-      max-height: calc(100vh - 140px);
+      max-height: calc(100vh - 120px);
     }
 
     /* Gate Photo Dropzone */
     .photo-dropzone {
       border: 2px dashed var(--border-color);
       border-radius: var(--radius-md);
-      padding: 1.25rem;
+      padding: 1rem;
       display: flex;
       align-items: center;
       gap: 1rem;
       background: var(--bg-card-header);
+      flex-wrap: wrap;
     }
 
     .btn-action-sec {
-      padding: 8px 16px;
+      padding: 7px 14px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border-color);
       background: var(--bg-card);
       color: var(--text-main);
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
     }
 
     /* Toast Notification */
     .toast-container {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 16px;
+      right: 16px;
       z-index: 2000;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      max-width: calc(100vw - 32px);
     }
 
     .toast-msg {
-      padding: 14px 20px;
+      padding: 12px 18px;
       border-radius: var(--radius-md);
       background: var(--bg-card);
       color: var(--text-main);
@@ -691,8 +733,9 @@
       box-shadow: var(--shadow-lg);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-weight: 600;
+      font-size: 0.875rem;
     }
 
     .toast-success { border-left: 4px solid var(--accent-success); }
@@ -718,3 +761,318 @@
     .btn-drive-pdf:hover { background: #c2410c; color: #ffffff; }
     .btn-drive-sheet { background: #10b981; color: #ffffff; }
     .btn-drive-sheet:hover { background: #059669; color: #ffffff; }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+    ═══════════════════════════════════════ */
+
+    /* ── TABLET: ≤ 1100px ── */
+    @media (max-width: 1100px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+      /* Move sidebar above items table on tablet */
+      .sidebar-column {
+        order: -1;
+      }
+    }
+
+    /* ── TABLET: ≤ 900px ── */
+    @media (max-width: 900px) {
+      .top-header {
+        padding: 0 1rem;
+        height: 58px;
+      }
+      .header-title-text {
+        font-size: 0.95rem;
+      }
+      .rkd-logo-centered {
+        height: 34px;
+      }
+      .app-container {
+        padding: 1rem;
+        gap: 1rem;
+      }
+    }
+
+    /* ── MOBILE: ≤ 768px ── */
+    @media (max-width: 768px) {
+
+      /* Header: hide text label on nav buttons, keep icons */
+      .top-header {
+        padding: 0 0.75rem;
+        height: 56px;
+        gap: 6px;
+      }
+
+      .btn-nav-back .btn-nav-text {
+        display: none;
+      }
+
+      .btn-nav-back {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+      }
+
+      .header-title-text {
+        font-size: 0.85rem;
+        letter-spacing: 0;
+      }
+
+      .rkd-logo-centered {
+        height: 30px;
+      }
+
+      /* Hide clock badge on mobile — saves space */
+      .header-clock-badge {
+        display: none;
+      }
+
+      .app-container {
+        padding: 0.75rem;
+        gap: 0.75rem;
+      }
+
+      /* Banner card: stack vertically */
+      .banner-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.875rem 1rem;
+        gap: 10px;
+      }
+
+      .btn-save-pdf {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+      }
+
+      /* Form grid: single column */
+      .form-grid-2col {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      /* Span-2 items already take full row, keep them */
+      .form-group[style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+      }
+
+      /* Card panels: reduce padding */
+      .card-panel {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+        gap: 6px;
+      }
+
+      /* Filter toolbar: stack vertically */
+      .filter-toolbar {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0.75rem;
+      }
+
+      .filter-item {
+        min-width: 100%;
+        width: 100%;
+      }
+
+      /* Photo dropzone: stack */
+      .photo-dropzone {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      /* Passcode: compact */
+      .passcode-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+      }
+
+      .pin-digit-box {
+        width: 52px;
+        height: 60px;
+        font-size: 1.6rem;
+      }
+
+      .pin-inputs-group {
+        gap: 12px;
+      }
+
+      /* Sidebar goes below form on mobile */
+      .sidebar-column {
+        order: 1;
+      }
+      .main-column {
+        order: 0;
+      }
+
+      /* Items table card title: wrap buttons */
+      .card-title > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+    }
+
+    /* ── SMALL MOBILE: ≤ 480px ── */
+    @media (max-width: 480px) {
+
+      .top-header {
+        height: 52px;
+        padding: 0 0.6rem;
+      }
+
+      .header-center-group {
+        gap: 6px;
+      }
+
+      .header-title-text {
+        font-size: 0.78rem;
+        max-width: 130px;
+      }
+
+      .rkd-logo-centered {
+        height: 26px;
+      }
+
+      .btn-nav-back {
+        padding: 7px 9px;
+        font-size: 0.75rem;
+      }
+
+      .app-container {
+        padding: 0.6rem;
+        gap: 0.6rem;
+      }
+
+      .banner-card {
+        padding: 0.75rem;
+        gap: 8px;
+      }
+
+      .grn-badge {
+        font-size: 0.8rem;
+      }
+
+      .card-panel {
+        padding: 0.875rem;
+      }
+
+      .btn-save-pdf {
+        font-size: 0.875rem;
+        padding: 11px 14px;
+      }
+
+      .form-control {
+        height: 42px;
+        font-size: 0.875rem;
+      }
+
+      /* Table inputs on small screens */
+      .table-input {
+        min-width: 80px !important;
+        height: 38px !important;
+        font-size: 0.82rem !important;
+      }
+
+      .btn-action-sec {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+      }
+
+      .btn-quick-action,
+      .btn-fullscreen-toggle {
+        font-size: 0.73rem;
+        padding: 6px 9px;
+      }
+
+      /* Hide fullscreen toggle on very small screens */
+      #fs-toggle-btn {
+        display: none;
+      }
+
+      /* Toast: full-width on small screens */
+      .toast-container {
+        bottom: 12px;
+        right: 8px;
+        left: 8px;
+        max-width: calc(100vw - 16px);
+      }
+
+      .toast-msg {
+        font-size: 0.82rem;
+        padding: 10px 14px;
+      }
+
+      /* Passcode: extra compact */
+      .passcode-card {
+        padding: 1.5rem 1.25rem;
+        border-radius: 16px;
+      }
+
+      .passcode-logo {
+        height: 52px;
+      }
+
+      .passcode-brand h2 {
+        font-size: 1.25rem;
+      }
+
+      .pin-digit-box {
+        width: 46px;
+        height: 54px;
+        font-size: 1.4rem;
+        border-radius: 12px;
+      }
+
+      .pin-inputs-group {
+        gap: 10px;
+      }
+    }
+
+    /* ── LANDSCAPE PHONES: height ≤ 500px ── */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .passcode-overlay {
+        align-items: flex-start;
+        padding-top: 0.5rem;
+      }
+      .passcode-card {
+        padding: 1.25rem;
+      }
+      .passcode-logo {
+        height: 40px;
+        margin-bottom: 0.5rem;
+      }
+      .passcode-brand p {
+        margin-bottom: 1rem;
+      }
+    }
+
+    /* Tap targets — ensure minimum 44px touch targets on mobile */
+    @media (hover: none) and (pointer: coarse) {
+      .btn-nav-back,
+      .btn-save-pdf,
+      .btn-action-sec,
+      .btn-quick-action,
+      .btn-fullscreen-toggle,
+      .theme-toggle-btn {
+        min-height: 44px;
+      }
+
+      .form-control,
+      .table-input {
+        min-height: 44px;
+        font-size: 16px !important; /* Prevents iOS zoom on input focus */
+      }
+
+      select.form-control {
+        font-size: 16px !important;
+      }
+    }

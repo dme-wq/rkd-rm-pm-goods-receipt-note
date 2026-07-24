@@ -415,6 +415,9 @@
         return;
       }
 
+      // Sort items by S.No ascending (1, 2, 3...)
+      items.sort((a, b) => (parseInt(a.sNo, 10) || 0) - (parseInt(b.sNo, 10) || 0));
+
       const unitsList = (state.masterData && state.masterData.units) ? state.masterData.units : ['Kg', 'Meter', 'Piece'];
       const generateUnitOptions = (selectedUnit) => {
         let options = '';
@@ -776,6 +779,9 @@
         showToast('Record not found. Please refresh history.', 'error');
         return;
       }
+
+      // Sort records by S.No ascending (1, 2, 3...)
+      records.sort((a, b) => (parseInt(a.sNo, 10) || 0) - (parseInt(b.sNo, 10) || 0));
       
       const header = records[0];
 
