@@ -83,30 +83,48 @@
         <!-- Step 3: Checklist Picture -->
         <div class="form-section">
           <label class="section-label">3. Checklist Picture <span class="req">*</span></label>
-          <div class="upload-area" id="zone-checklist" onclick="document.getElementById('input-checklist').click()">
+          <div class="upload-area" id="zone-checklist">
             <i class="fa-solid fa-camera mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
-            <div>Tap to Capture</div>
+            <div style="margin-bottom:10px;">Checklist Photo</div>
+            <div class="upload-btns">
+              <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-checklist-cam').click()">
+                <i class="fa-solid fa-camera"></i> Camera
+              </button>
+              <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-checklist-gal').click()">
+                <i class="fa-solid fa-image"></i> Gallery
+              </button>
+            </div>
           </div>
-          <input type="file" id="input-checklist" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'checklist')">
+          <input type="file" id="input-checklist-cam" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'checklist')">
+          <input type="file" id="input-checklist-gal" accept="image/*" hidden onchange="handleFile(this, 'checklist')">
           <div id="preview-checklist" class="img-preview" style="display:none;"></div>
           <div class="progress-wrap" id="progress-checklist" style="display:none;">
             <div class="progress-bar"></div>
-            <span>Uploading...</span>
+            <span id="progress-checklist-text">Compressing...</span>
           </div>
         </div>
 
         <!-- Step 4: Invoice Picture -->
         <div class="form-section">
           <label class="section-label">4. Invoice Picture <span class="req">*</span></label>
-          <div class="upload-area" id="zone-invoice" onclick="document.getElementById('input-invoice').click()">
+          <div class="upload-area" id="zone-invoice">
             <i class="fa-solid fa-file-invoice mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
-            <div>Tap to Capture</div>
+            <div style="margin-bottom:10px;">Invoice Photo</div>
+            <div class="upload-btns">
+              <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-invoice-cam').click()">
+                <i class="fa-solid fa-camera"></i> Camera
+              </button>
+              <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-invoice-gal').click()">
+                <i class="fa-solid fa-image"></i> Gallery
+              </button>
+            </div>
           </div>
-          <input type="file" id="input-invoice" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'invoice')">
+          <input type="file" id="input-invoice-cam" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'invoice')">
+          <input type="file" id="input-invoice-gal" accept="image/*" hidden onchange="handleFile(this, 'invoice')">
           <div id="preview-invoice" class="img-preview" style="display:none;"></div>
           <div class="progress-wrap" id="progress-invoice" style="display:none;">
             <div class="progress-bar"></div>
-            <span>Uploading...</span>
+            <span id="progress-invoice-text">Compressing...</span>
           </div>
         </div>
 
@@ -130,15 +148,14 @@
           <input type="date" id="input-next-date" class="input-text">
         </div>
       </div>
-    </div>
-
-    <!-- Bottom Action Bar -->
-    <div class="bottom-action-bar" id="action-bar" style="display:none;">
-      <button class="btn-primary" id="btn-submit" onclick="submitForm()">
-        <i class="fa-solid fa-paper-plane"></i> Submit Entry
-      </button>
-    </div>
   </main>
+
+  <!-- Bottom Action Bar (outside form so position:fixed works on mobile) -->
+  <div class="bottom-action-bar" id="action-bar" style="display:none;">
+    <button class="btn-primary" id="btn-submit" onclick="submitForm()">
+      <i class="fa-solid fa-paper-plane"></i> Submit Entry
+    </button>
+  </div>
 
   <!-- Success Overlay -->
   <div id="success-overlay" class="success-overlay" style="display:none;">

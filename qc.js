@@ -183,46 +183,104 @@ function toggleReturnInput() {
 }
 
 function resetUpload(type) {
-  document.getElementById(`zone-${type}`).style.display = 'block';
-  document.getElementById(`zone-${type}`).classList.remove('uploaded');
-  document.getElementById(`preview-${type}`).style.display = 'none';
-  document.getElementById(`preview-${type}`).innerHTML = '';
-  document.getElementById(`progress-${type}`).style.display = 'none';
+  const zone = document.getElementById(`zone-${type}`);
+  if (zone) { zone.style.display = 'block'; zone.classList.remove('uploaded'); }
+  const preview = document.getElementById(`preview-${type}`);
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  const prog = document.getElementById(`progress-${type}`);
+  if (prog) { prog.style.display = 'none'; prog.innerHTML = '<div class="progress-bar"></div><span>Compressing...</span>'; }
+  // Clear both inputs
+  ['cam', 'gal'].forEach(suffix => {
+    const el = document.getElementById(`input-${type}-${suffix}`);
+    if (el) el.value = '';
+  });
+  if (type === 'checklist') state.checklistUrl = null;
+  if (type === 'invoice') state.invoiceUrl = null;
+}
+
+/**
+ * Compress an image File using Canvas API.
+ * Max dimension: 1280px. Quality: 0.65 JPEG.
+ * Reduces 10-20MB camera photo → ~150-300KB.
+ */
+function compressImage(file, maxPx = 1280, quality = 0.65) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        try {
+          let { width, height } = img;
+          if (width > maxPx || height > maxPx) {
+            if (width > height) {
+              height = Math.round((height * maxPx) / width);
+              width = maxPx;
+            } else {
+              width = Math.round((width * maxPx) / height);
+              height = maxPx;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function handleFile(input, type) {
   const file = input.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64Data = e.target.result;
-    
-    // Show preview
-    document.getElementById(`zone-${type}`).style.display = 'none';
-    const preview = document.getElementById(`preview-${type}`);
-    preview.style.display = 'block';
-    preview.innerHTML = `<img src="${base64Data}">`;
-    
-    document.getElementById(`progress-${type}`).style.display = 'flex';
+  const zone    = document.getElementById(`zone-${type}`);
+  const preview = document.getElementById(`preview-${type}`);
+  const progEl  = document.getElementById(`progress-${type}`);
+  const progTxt = document.getElementById(`progress-${type}-text`);
 
-    try {
-      const data = await callBackend('uploadQcPhoto', [base64Data, file.name, type]);
-      
-      if (data.status === 'success') {
-        if (type === 'checklist') state.checklistUrl = data.fileUrl;
-        if (type === 'invoice') state.invoiceUrl = data.fileUrl;
-        document.getElementById(`progress-${type}`).innerHTML = '<span style="color:var(--success);"><i class="fa-solid fa-check"></i> Uploaded</span>';
-      } else {
-        alert('Upload failed: ' + data.message);
-        resetUpload(type);
-      }
-    } catch (err) {
-      alert('Upload error. Try again.');
-      resetUpload(type);
+  // Show progress immediately, hide upload zone
+  zone.style.display = 'none';
+  progEl.style.display = 'flex';
+  if (progTxt) progTxt.textContent = 'Compressing...';
+
+  try {
+    // 1. Compress (canvas, max 1280px, JPEG 0.65)
+    const compressed = await compressImage(file, 1280, 0.65);
+
+    // 2. Show thumbnail preview
+    preview.style.display = 'block';
+    preview.innerHTML = `<img src="${compressed}" style="max-height:160px;">
+      <button type="button" class="img-remove-btn" onclick="resetUpload('${type}')">
+        <i class="fa-solid fa-times"></i>
+      </button>`;
+
+    // 3. Upload to backend
+    if (progTxt) progTxt.textContent = 'Uploading...';
+    const data = await callBackend('uploadQcPhoto', [compressed, file.name.replace(/\.[^.]+$/, '.jpg'), type]);
+
+    if (data.status === 'success') {
+      if (type === 'checklist') state.checklistUrl = data.fileUrl;
+      if (type === 'invoice')   state.invoiceUrl   = data.fileUrl;
+      zone.classList.add('uploaded');
+      progEl.innerHTML = '<span style="color:var(--success);"><i class="fa-solid fa-check"></i> Uploaded ✓</span>';
+    } else {
+      throw new Error(data.message || 'Upload failed');
     }
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    console.error('handleFile error:', err);
+    alert('Error: ' + (err.message || 'Please try again.'));
+    resetUpload(type);
+  }
 }
 
 async function submitForm() {

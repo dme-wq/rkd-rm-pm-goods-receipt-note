@@ -70,16 +70,17 @@ body {
 .view-container {
   flex: 1;
   overflow-y: auto;
-  position: absolute;
+  position: fixed;
   top: 65px; /* height of app bar */
   left: 0;
   right: 0;
   bottom: 0;
   background: var(--bg-main);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  z-index: 1;
 }
-.slide-right { transform: translateX(100%); }
-.active-view { transform: translateX(0); z-index: 5; }
+.slide-right { left: 100%; opacity: 0; pointer-events: none; }
+.active-view { left: 0; opacity: 1; pointer-events: auto; z-index: 2; }
 
 /* List View */
 .list-header {
@@ -272,7 +273,7 @@ input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
 .upload-area {
   border: 2px dashed var(--border);
   border-radius: 12px;
-  padding: 30px;
+  padding: 20px;
   text-align: center;
   background: #f8fafc;
   font-weight: 600;
@@ -282,6 +283,31 @@ input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
   border-style: solid;
   border-color: var(--success);
   background: #f0fdf4;
+}
+.upload-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 4px;
+}
+.btn-upload-opt {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: 2px solid var(--primary);
+  background: white;
+  color: var(--primary);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-upload-opt:active {
+  background: var(--primary);
+  color: white;
 }
 
 .img-preview {
@@ -296,6 +322,21 @@ input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
   max-height: 200px;
   object-fit: cover;
   display: block;
+}
+.img-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .progress-wrap { margin-top: 10px; font-size: 0.85rem; color: var(--text-muted); }
