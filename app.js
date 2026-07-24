@@ -668,8 +668,8 @@
       const editBadge = document.getElementById('edit-mode-badge');
       if (editBadge) editBadge.style.display = 'none';
       
-      const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
-      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit Inward Entry';
+      const submitBtn = document.querySelector('.btn-save-pdf');
+      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Submit Inward Entry';
 
       renderItemsTable([]);
       
@@ -701,8 +701,8 @@
       document.getElementById('grnDisplayBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
       document.getElementById('top-grn-span').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
       
-      const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
-      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit Inward Entry';
+      const submitBtn = document.querySelector('.btn-save-pdf');
+      if(submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Submit Inward Entry';
 
       renderItemsTable([]);
       
@@ -923,9 +923,12 @@
         editBadge.innerText = `✏️ EDITING: ${grnNo}`;
       }
 
-      // Update submit button text
-      const submitBtn = document.querySelector('#main-inward-form button[type="submit"]');
-      if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Update Inward Entry';
+      // Update submit button text and ensure it is visible
+      const submitBtn = document.querySelector('.btn-save-pdf');
+      if (submitBtn) {
+        submitBtn.style.display = 'inline-flex';
+        submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Save and Submit Revised Entry';
+      }
       
       renderItemsTable(state.currentPoItems);
 
