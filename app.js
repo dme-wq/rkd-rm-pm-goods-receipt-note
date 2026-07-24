@@ -322,10 +322,11 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbwkGsfRjYKtPEij30uLlZ0ejCVQVoF0_MaoOLADJc2I2Huzm0jeeLFhf0hhFpIXETbdGQ/exec'; // New Web App URL
 
     function switchTab(tab) {
-      document.getElementById('main-inward-form').style.display = tab === 'form' ? 'block' : 'none';
-      document.getElementById('history-view').style.display = tab === 'history' ? 'block' : 'none';
-      
-      // Hide Save & Submit Inward Entry button when on Inward Records tab
+      document.getElementById('main-inward-form').style.display   = tab === 'form'           ? 'block' : 'none';
+      document.getElementById('history-view').style.display       = tab === 'history'         ? 'block' : 'none';
+      document.getElementById('quality-check-view').style.display = tab === 'quality-check'   ? 'block' : 'none';
+
+      // Hide Save & Submit Inward Entry button when not on form
       const saveBtn = document.querySelector('.btn-save-pdf');
       if (saveBtn) {
         saveBtn.style.display = tab === 'form' ? 'inline-flex' : 'none';
@@ -339,7 +340,15 @@
           applyHistoryFilters();
         }
       }
+
+      if (tab === 'quality-check') {
+        // Only load if not already loaded
+        if (!window.qcLoaded) {
+          loadQualityCheckData();
+        }
+      }
     }
+
 
     async function callBackend(funcName, params = []) {
       if (API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
@@ -946,3 +955,332 @@
       c.appendChild(t);
       setTimeout(() => t.remove(), 3500);
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       QUALITY CHECK MODULE — JavaScript
+    ═══════════════════════════════════════════════════════════════ */
+
+    const qcState = {
+      pendingGRNs:    [],
+      completedQCs:   [],
+      passingPersons: [],
+      selectedGrn:    null,
+      deliveryStatus: null,
+      checklistBase64: null,
+      invoiceBase64:   null
+    };
+
+    async function loadQualityCheckData(forceRefresh) {
+      window.qcLoaded = true;
+      const loadingEl  = document.getElementById('qc-loading');
+      const cardsEl    = document.getElementById('qc-cards-container');
+      const emptyEl    = document.getElementById('qc-empty-state');
+      const refreshBtn = document.getElementById('qc-refresh-btn');
+
+      if (loadingEl) loadingEl.style.display = 'flex';
+      if (cardsEl)   cardsEl.innerHTML = '';
+      if (emptyEl)   emptyEl.style.display = 'none';
+      if (refreshBtn) refreshBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin me-1"></i> Loading...';
+
+      try {
+        const res = await callBackend('getQualityCheckData');
+        if (res.status === 'success') {
+          qcState.pendingGRNs    = res.data.pendingGRNs    || [];
+          qcState.completedQCs   = res.data.completedQCs   || [];
+          qcState.passingPersons = res.data.passingPersons || [];
+          renderQcCards();
+          renderQcHistory();
+          updateQcStats();
+        } else {
+          showToast('Failed to load QC data: ' + res.message, 'error');
+        }
+      } catch (err) {
+        showToast('Network error loading QC data', 'error');
+      } finally {
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (refreshBtn) refreshBtn.innerHTML = '<i class="fa-solid fa-rotate me-1"></i> Refresh';
+      }
+    }
+
+    function updateQcStats() {
+      const pending = qcState.pendingGRNs.length;
+      const total   = qcState.completedQCs.length;
+      const el = (id) => document.getElementById(id);
+      if (el('qc-stat-pending-count')) el('qc-stat-pending-count').textContent = pending;
+      if (el('qc-stat-done-count'))    el('qc-stat-done-count').textContent    = total;
+      if (el('qc-stat-total-count'))   el('qc-stat-total-count').textContent   = total;
+      if (el('qc-pending-badge'))      el('qc-pending-badge').textContent      = pending;
+    }
+
+    function renderQcCards() {
+      const container = document.getElementById('qc-cards-container');
+      const emptyEl   = document.getElementById('qc-empty-state');
+      if (!container) return;
+
+      if (!qcState.pendingGRNs.length) {
+        container.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'flex';
+        return;
+      }
+      if (emptyEl) emptyEl.style.display = 'none';
+
+      container.innerHTML = qcState.pendingGRNs.map(grn => {
+        const chipsHtml = (grn.items || []).slice(0, 4).map(it =>
+          `<span class="qc-item-chip">${it.name}</span>`
+        ).join('');
+        const more = (grn.items || []).length - 4;
+        const moreChip = more > 0 ? `<span class="qc-item-chip">+${more} more</span>` : '';
+        return `
+          <div class="qc-grn-card" id="qc-card-${grn.grnNo}" onclick="openQcForm('${grn.grnNo}')">
+            <div class="qc-card-grn"><i class="fa-solid fa-file-invoice me-1"></i>${grn.grnNo}</div>
+            <div class="qc-card-vendor">${grn.vendorName || '\u2014'}</div>
+            <div class="qc-card-meta">
+              <span><i class="fa-solid fa-calendar me-1"></i>${grn.inwardDate || '\u2014'}</span>
+              <span><i class="fa-solid fa-tag me-1"></i>${grn.poNumber || '\u2014'}</span>
+            </div>
+            <div class="qc-card-items">${chipsHtml}${moreChip}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function openQcForm(grnNo) {
+      const grn = qcState.pendingGRNs.find(g => g.grnNo === grnNo);
+      if (!grn) return;
+
+      document.querySelectorAll('.qc-grn-card').forEach(c => c.classList.remove('qc-card-active'));
+      const card = document.getElementById('qc-card-' + grnNo);
+      if (card) { card.classList.add('qc-card-active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+
+      qcState.selectedGrn    = grn;
+      qcState.deliveryStatus = null;
+      qcState.checklistBase64 = null;
+      qcState.invoiceBase64   = null;
+
+      document.getElementById('qc-form-placeholder').style.display = 'none';
+      document.getElementById('qc-form-content').style.display     = 'block';
+
+      document.getElementById('qc-form-grn-no').textContent     = grn.grnNo;
+      document.getElementById('qc-form-vendor-name').textContent = grn.vendorName || '\u2014';
+
+      const itemsEl = document.getElementById('qc-form-items-summary');
+      itemsEl.innerHTML = (grn.items || []).map(it =>
+        `<span class="qc-form-item-tag">${it.name} \u2014 ${it.qty} ${it.unit}</span>`
+      ).join('');
+
+      document.getElementById('qc-btn-completed').classList.remove('qc-active');
+      document.getElementById('qc-btn-pending').classList.remove('qc-active');
+      document.getElementById('qc-fields-section').style.display   = 'none';
+      document.getElementById('qc-next-date-section').style.display = 'none';
+
+      resetQcUpload('checklist');
+      resetQcUpload('invoice');
+
+      const noRadio = document.getElementById('qc-return-no');
+      if (noRadio) noRadio.checked = true;
+      document.getElementById('qc-return-detail').style.display = 'none';
+
+      const personRadios = document.getElementById('qc-person-radios');
+      personRadios.innerHTML = qcState.passingPersons.map((p, i) => `
+        <label class="qc-radio-option">
+          <input type="radio" name="qc-person" value="${p}" ${i === 0 ? 'checked' : ''}>
+          <span>${p}</span>
+        </label>`).join('');
+
+      const formPanel = document.getElementById('qc-form-panel');
+      if (formPanel) formPanel.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetQcUpload(type) {
+      const zone    = document.getElementById('qc-' + type + '-zone');
+      const preview = document.getElementById('qc-' + type + '-preview');
+      const progress= document.getElementById('qc-' + type + '-progress');
+      const input   = document.getElementById('qc-' + type + '-input');
+      if (zone)    zone.classList.remove('qc-zone-uploaded');
+      if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+      if (progress) progress.style.display = 'none';
+      if (input)   input.value = '';
+      if (type === 'checklist') qcState.checklistBase64 = null;
+      if (type === 'invoice')   qcState.invoiceBase64   = null;
+    }
+
+    function setQcDeliveryStatus(status) {
+      qcState.deliveryStatus = status;
+      document.getElementById('qc-btn-completed').classList.toggle('qc-active', status === 'Delivery Completed');
+      document.getElementById('qc-btn-pending').classList.toggle('qc-active',   status === 'Delivery Pending');
+      document.getElementById('qc-fields-section').style.display    = 'block';
+      document.getElementById('qc-next-date-section').style.display = status === 'Delivery Pending' ? 'block' : 'none';
+    }
+
+    function handleQcFileSelect(input, type) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target.result;
+        if (type === 'checklist') qcState.checklistBase64 = base64;
+        if (type === 'invoice')   qcState.invoiceBase64   = base64;
+        const preview = document.getElementById('qc-' + type + '-preview');
+        if (preview) {
+          preview.style.display = 'block';
+          preview.innerHTML = `
+            <img src="${base64}" alt="${type} preview">
+            <button class="qc-img-preview-remove" onclick="resetQcUpload('${type}')" title="Remove">
+              <i class="fa-solid fa-times"></i>
+            </button>`;
+        }
+        const zone = document.getElementById('qc-' + type + '-zone');
+        if (zone) zone.classList.add('qc-zone-uploaded');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function toggleReturnOther() {
+      const isOther = document.getElementById('qc-return-other').checked;
+      document.getElementById('qc-return-detail').style.display = isOther ? 'block' : 'none';
+    }
+
+    function toggleQcHistory() {
+      const list    = document.getElementById('qc-history-list');
+      const chevron = document.getElementById('qc-history-chevron');
+      const isOpen  = list.style.display !== 'none';
+      list.style.display = isOpen ? 'none' : 'block';
+      if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+
+    function renderQcHistory() {
+      const tbody = document.getElementById('qc-history-tbody');
+      if (!tbody) return;
+      if (!qcState.completedQCs.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No completed QC records yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = qcState.completedQCs.map(r => {
+        const col = r.deliveryStatus === 'Delivery Completed' ? '#10b981' : '#f59e0b';
+        return `<tr>
+          <td>${r.timestamp || '\u2014'}</td>
+          <td style="font-family:monospace;font-weight:700;color:var(--accent-primary);">${r.grnNo || '\u2014'}</td>
+          <td><span style="color:${col};font-weight:700;">${r.deliveryStatus || '\u2014'}</span></td>
+          <td>${r.passingPerson || '\u2014'}</td>
+          <td>${r.nextDeliveryDate || '\u2014'}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function submitQualityCheckEntry() {
+      if (!qcState.selectedGrn) { showToast('No GRN selected', 'error'); return; }
+      if (!qcState.deliveryStatus) { showToast('Please select Delivery Status', 'error'); return; }
+
+      const personRadio = document.querySelector('input[name="qc-person"]:checked');
+      if (!personRadio) { showToast('Please select Passing Person', 'error'); return; }
+
+      let nextDeliveryDate = '';
+      if (qcState.deliveryStatus === 'Delivery Pending') {
+        nextDeliveryDate = document.getElementById('qc-next-delivery-date').value;
+        if (!nextDeliveryDate) { showToast('Please enter Next Delivery Date', 'error'); return; }
+      }
+
+      const returnRadio = document.querySelector('input[name="qc-return"]:checked');
+      let anythingToReturn = returnRadio ? returnRadio.value : 'No';
+      if (anythingToReturn === 'Other') {
+        const detail = (document.getElementById('qc-return-detail').value || '').trim();
+        if (detail) anythingToReturn = 'Other: ' + detail;
+      }
+
+      const submitBtn   = document.getElementById('qc-submit-btn');
+      const submitLabel = document.getElementById('qc-submit-label');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('qc-submitting');
+      submitLabel.textContent = 'Uploading photos...';
+
+      try {
+        let checklistPicUrl = '';
+        let invoicePicUrl   = '';
+        const grnNo = qcState.selectedGrn.grnNo;
+        const ts    = Date.now();
+
+        if (qcState.checklistBase64) {
+          submitLabel.textContent = 'Uploading checklist photo...';
+          document.getElementById('qc-checklist-progress').style.display = 'flex';
+          const chRes = await callBackend('uploadQcPhoto', [
+            qcState.checklistBase64,
+            'QC_Checklist_' + grnNo + '_' + ts + '.jpg',
+            'checklist'
+          ]);
+          document.getElementById('qc-checklist-progress').style.display = 'none';
+          if (chRes.status === 'success') checklistPicUrl = chRes.fileUrl || '';
+          else showToast('Checklist photo upload failed: ' + chRes.message, 'error');
+        }
+
+        if (qcState.invoiceBase64) {
+          submitLabel.textContent = 'Uploading invoice photo...';
+          document.getElementById('qc-invoice-progress').style.display = 'flex';
+          const invRes = await callBackend('uploadQcPhoto', [
+            qcState.invoiceBase64,
+            'QC_Invoice_' + grnNo + '_' + ts + '.jpg',
+            'invoice'
+          ]);
+          document.getElementById('qc-invoice-progress').style.display = 'none';
+          if (invRes.status === 'success') invoicePicUrl = invRes.fileUrl || '';
+          else showToast('Invoice photo upload failed: ' + invRes.message, 'error');
+        }
+
+        submitLabel.textContent = 'Saving to sheet...';
+        const saveRes = await callBackend('saveQualityCheckEntry', [{
+          grnNo:            grnNo,
+          deliveryStatus:   qcState.deliveryStatus,
+          passingPerson:    personRadio.value,
+          checklistPicUrl:  checklistPicUrl,
+          invoicePicUrl:    invoicePicUrl,
+          anythingToReturn: anythingToReturn,
+          nextDeliveryDate: nextDeliveryDate,
+          email:            ''
+        }]);
+
+        if (saveRes.status === 'success') {
+          showQcSuccessOverlay(grnNo, qcState.deliveryStatus);
+
+          qcState.pendingGRNs = qcState.pendingGRNs.filter(g => g.grnNo !== grnNo);
+          qcState.completedQCs.unshift({
+            timestamp:       new Date().toLocaleString('en-IN'),
+            grnNo:           grnNo,
+            deliveryStatus:  qcState.deliveryStatus,
+            passingPerson:   personRadio.value,
+            nextDeliveryDate: nextDeliveryDate
+          });
+
+          qcState.selectedGrn    = null;
+          qcState.deliveryStatus = null;
+          document.getElementById('qc-form-placeholder').style.display = 'flex';
+          document.getElementById('qc-form-content').style.display     = 'none';
+
+          renderQcCards();
+          renderQcHistory();
+          updateQcStats();
+        } else {
+          showToast('Save failed: ' + saveRes.message, 'error');
+        }
+
+      } catch (err) {
+        showToast('Submission error: ' + (err.message || err), 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('qc-submitting');
+        submitLabel.textContent = 'Submit Quality Check';
+      }
+    }
+
+    function showQcSuccessOverlay(grnNo, status) {
+      const overlay = document.createElement('div');
+      overlay.className = 'qc-success-overlay';
+      overlay.innerHTML = `
+        <div class="qc-success-icon">&#x2705;</div>
+        <div class="qc-success-title">Quality Check Submitted!</div>
+        <div class="qc-success-sub">${grnNo} &mdash; ${status}</div>`;
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => overlay.remove(), 400);
+      }, 2400);
+    }
+
