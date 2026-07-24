@@ -11,6 +11,26 @@ let state = {
   invoiceUrl: null
 };
 
+async function callBackend(funcName, params = []) {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        action: funcName,
+        payload: params
+      })
+    });
+    if (!response.ok) throw new Error('Network response was not ok');
+    return await response.json();
+  } catch (error) {
+    console.error("API Call Error:", error);
+    throw error;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Check if GRN is passed via URL parameter
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,8 +48,7 @@ async function loadQCData(force = false, autoSelectGrn = null) {
   document.getElementById('pending-count').innerText = '...';
 
   try {
-    const res = await fetch(`${API_URL}?action=getQualityCheckData`);
-    const json = await res.json();
+    const json = await callBackend('getQualityCheckData');
     
     if (json.status === 'success') {
       state.pendingGRNs = json.data.pendingGRNs || [];
@@ -188,17 +207,7 @@ async function handleFile(input, type) {
     document.getElementById(`progress-${type}`).style.display = 'flex';
 
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          action: 'uploadQcPhoto',
-          base64: base64Data,
-          filename: file.name,
-          folderType: type
-        })
-      });
-      const data = await res.json();
+      const data = await callBackend('uploadQcPhoto', [base64Data, file.name, type]);
       
       if (data.status === 'success') {
         if (type === 'checklist') state.checklistUrl = data.fileUrl;
@@ -243,9 +252,12 @@ async function submitForm() {
     returnText = document.getElementById('return-detail').value.trim() || 'Other (No details)';
   }
 
-  const payload = {
-    action: 'saveQualityCheckEntry',
-    data: JSON.stringify({
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;margin:0;"></div>';
+
+  try {
+    const data = await callBackend('saveQualityCheckEntry', [{
       grnNo: state.selectedGRN.grnNo,
       deliveryStatus: state.status,
       passingPerson: personEl.value,
@@ -253,21 +265,8 @@ async function submitForm() {
       invoicePicUrl: state.invoiceUrl,
       anythingToReturn: returnText,
       nextDeliveryDate: nextDate,
-      email: '' // Not strictly required but mapped in backend
-    })
-  };
-
-  const btn = document.getElementById('btn-submit');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;margin:0;"></div>';
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(payload)
-    });
-    const data = await res.json();
+      email: ''
+    }]);
     
     if (data.status === 'success') {
       document.getElementById('success-overlay').style.display = 'flex';
