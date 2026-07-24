@@ -160,10 +160,15 @@ function openForm(grn) {
   const grid = document.getElementById('person-grid');
   grid.innerHTML = state.passingPersons.map((p, idx) => `
     <label class="radio-option">
-      <input type="radio" name="passing_person" value="${p}" ${idx===0?'checked':''}>
+      <input type="radio" name="passing_person" value="${p}" ${idx===0?'checked':''} onchange="toggleCustomPerson()">
       ${p}
     </label>
-  `).join('');
+  `).join('') + `
+    <label class="radio-option">
+      <input type="radio" name="passing_person" value="Other" onchange="toggleCustomPerson()">
+      <i class="fa-solid fa-plus me-1"></i> Add New Person
+    </label>
+  `;
 
   // Reset Form state
   setStatus(null);
@@ -219,6 +224,19 @@ function setStatus(statusValue) {
 function toggleReturnInput() {
   const val = document.querySelector('input[name="return_opt"]:checked').value;
   document.getElementById('return-detail').style.display = val === 'Other' ? 'block' : 'none';
+}
+
+window.toggleCustomPerson = function() {
+  const checked = document.querySelector('input[name="passing_person"]:checked');
+  const customInput = document.getElementById('custom-person-input');
+  if (customInput) {
+    if (checked && checked.value === 'Other') {
+      customInput.style.display = 'block';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+    }
+  }
 }
 
 function resetUpload(type) {
@@ -333,6 +351,15 @@ async function submitForm() {
     alert('Please select a Passing Person.');
     return;
   }
+  
+  let passingPersonVal = personEl.value;
+  if (passingPersonVal === 'Other') {
+    passingPersonVal = document.getElementById('custom-person-input').value.trim();
+    if (!passingPersonVal) {
+      alert('Please enter the name of the new Passing Person.');
+      return;
+    }
+  }
 
   let nextDate = '';
   if (state.status === 'Delivery Pending') {
@@ -357,7 +384,7 @@ async function submitForm() {
     const data = await callBackend('saveQualityCheckEntry', [{
       grnNo: state.selectedGRN.grnNo,
       deliveryStatus: state.status,
-      passingPerson: personEl.value,
+      passingPerson: passingPersonVal,
       checklistPicUrl: state.checklistUrl,
       invoicePicUrl: state.invoiceUrl,
       anythingToReturn: returnText,
