@@ -1,6 +1,6 @@
 // qc.js
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzhndPekBZSYxWyh4T41FPC_5wHz_-4o4rsngWOFtzCC_9X4YAHcGxZgIBZ66qCjAioBg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxVxKzGFfGL6gWpOrfoohPFq6gjwXA7VKt6ivhicfPWzySNl59KJTVpCc3pT8PFEWUtvw/exec';
 
 let state = {
   pendingGRNs: [],
