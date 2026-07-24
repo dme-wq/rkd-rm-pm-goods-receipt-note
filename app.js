@@ -325,6 +325,10 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbz8nSfjR5NDPxsPmpK9TgsKfrgPKtmmZOH-tSt6HCbgHc8AMdeTzKIzMjWJcAihfEa8Hw/exec'; // New Web App URL
 
     function switchTab(tab) {
+      if (tab === 'form' && state.editMode) {
+        resetFormOptimistically();
+      }
+
       document.getElementById('main-inward-form').style.display   = tab === 'form'           ? 'block' : 'none';
       document.getElementById('history-view').style.display       = tab === 'history'         ? 'block' : 'none';
       const qcView = document.getElementById('quality-check-view');
