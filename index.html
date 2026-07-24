@@ -460,6 +460,31 @@
   </div>
 
 
+  <!-- MODERN PASSCODE MODAL -->
+  <div class="modal fade" id="passcodeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content passcode-modal-content">
+        <div class="modal-body text-center p-4">
+          <div class="passcode-icon-wrapper mb-3">
+            <i class="fa-solid fa-shield-halved" style="font-size: 2rem; color: #fff;"></i>
+          </div>
+          <h5 class="fw-bold text-white mb-1">Admin Access</h5>
+          <p class="text-white-50 font-size-sm mb-4" style="font-size: 0.8rem;">Editing past entries requires authorization.</p>
+          
+          <div class="passcode-inputs" id="passcode-inputs">
+            <input type="password" class="passcode-box" maxlength="1">
+            <input type="password" class="passcode-box" maxlength="1">
+            <input type="password" class="passcode-box" maxlength="1">
+            <input type="password" class="passcode-box" maxlength="1">
+          </div>
+          
+          <div class="mt-4">
+             <button type="button" class="btn btn-link text-white-50 text-decoration-none p-0 m-0" style="font-size: 0.85rem;" onclick="cancelPasscodeModal()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>

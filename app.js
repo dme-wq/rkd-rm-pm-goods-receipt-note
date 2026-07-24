@@ -812,15 +812,17 @@
                            entryDate.getDate() === today.getDate());
           
           if (!isToday) {
-            const pass = prompt("This is a past date entry. Please enter Admin Passcode to edit:");
-            if (pass !== '0548') {
-              alert("Incorrect passcode! You are not authorized to edit past entries.");
-              return;
-            }
+            showModernPasscodeModal(() => {
+              continueEditRecord(grnNo, header, records);
+            });
+            return;
           }
         }
       }
+      continueEditRecord(grnNo, header, records);
+    }
 
+    function continueEditRecord(grnNo, header, records) {
       // ── Vendor Details ──
       // Inject PO number as an option if not already present (handles completed/filtered-out POs)
       const poSel = document.getElementById('vendorPoNumber');
@@ -1047,3 +1049,70 @@ function renderPendingScorecardAndDetails() {
     detailsContainer.innerHTML = `<div style="text-align:center; color:var(--success); padding: 15px; font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:2rem; display:block; margin-bottom:8px;"></i> All Caught Up! No pending Gate Entries.</div>`;
   }
 }
+
+// --- Modern Passcode Logic ---
+let passcodeCallback = null;
+let passcodeModalInstance = null;
+
+function showModernPasscodeModal(callback) {
+  passcodeCallback = callback;
+  if (!passcodeModalInstance) {
+    passcodeModalInstance = new bootstrap.Modal(document.getElementById('passcodeModal'));
+  }
+  
+  // Clear inputs
+  const inputs = document.querySelectorAll('.passcode-box');
+  inputs.forEach(input => input.value = '');
+  inputs.forEach(input => input.classList.remove('error-shake'));
+  
+  passcodeModalInstance.show();
+  
+  // Focus first input
+  setTimeout(() => inputs[0].focus(), 300);
+}
+
+function cancelPasscodeModal() {
+  if (passcodeModalInstance) passcodeModalInstance.hide();
+  passcodeCallback = null;
+}
+
+// Attach event listeners for OTP style input
+document.addEventListener('DOMContentLoaded', () => {
+  const inputs = document.querySelectorAll('.passcode-box');
+  inputs.forEach((input, index) => {
+    input.addEventListener('keyup', function(e) {
+      if (e.key === 'Backspace') {
+        if (index > 0 && !this.value) {
+          inputs[index - 1].focus();
+        }
+      } else if (e.key >= '0' && e.key <= '9') {
+        this.value = e.key;
+        if (index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        } else {
+          // Last input, check passcode
+          const passcode = Array.from(inputs).map(i => i.value).join('');
+          if (passcode === '0548') {
+            passcodeModalInstance.hide();
+            if (passcodeCallback) {
+              const cb = passcodeCallback;
+              passcodeCallback = null;
+              cb();
+            }
+          } else {
+            inputs.forEach(i => i.classList.add('error-shake'));
+            setTimeout(() => {
+              inputs.forEach(i => {
+                i.classList.remove('error-shake');
+                i.value = '';
+              });
+              inputs[0].focus();
+            }, 400);
+          }
+        }
+      } else {
+        this.value = ''; // prevent non-numeric
+      }
+    });
+  });
+});
