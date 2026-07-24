@@ -926,13 +926,15 @@ color: var(--accent-primary);
 .sc-card {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  padding: 12px 16px;
-  width: 200px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  width: auto;
+  min-width: 120px;
+  max-width: 160px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .sc-blue { background: #7c85c4; color: #fff; }
@@ -961,8 +963,8 @@ color: var(--accent-primary);
 }
 
 .sc-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 .sc-blue .sc-dot { background: #ffdf8d; }
@@ -970,8 +972,8 @@ color: var(--accent-primary);
 
 .sc-title {
   font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
+  font-size: 0.75rem;
+  letter-spacing: 0.2px;
 }
 
 .sc-body {
@@ -980,8 +982,8 @@ color: var(--accent-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 6px;
+  padding: 4px 8px;
 }
 
 .sc-blue .sc-body { background: #ffdf8d; color: #5a77c3; }
@@ -990,21 +992,21 @@ color: var(--accent-primary);
 .sc-value-group {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 4px;
 }
 
 .sc-value {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
 .sc-label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 800;
 }
 
 .sc-icon {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   opacity: 0.8;
   font-weight: 800;
 }
