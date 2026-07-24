@@ -264,11 +264,15 @@
           </div>
 
           <!-- Pending Inward Details Section -->
-          <div class="card-panel" id="pending-details-panel" style="display:none; border: 2px dashed var(--accent-primary); background: #f8fafc; margin-top: 20px;">
-            <div class="card-title">
-              <span><i class="fa-solid fa-list-check me-2" style="color:var(--accent-primary);"></i> Pending Gate Entries (Not Inwarded)</span>
+          <div id="pending-details-panel" class="funky-notification-panel" style="display:none;">
+            <div class="funky-panel-header">
+              <div class="live-indicator">
+                <span class="blink-dot"></span>
+                <span class="live-text">Action Required</span>
+              </div>
+              <h3 class="funky-panel-title">Pending Gate Entries</h3>
             </div>
-            <div id="pending-details-container" style="display:flex; flex-direction:column; gap:10px;">
+            <div id="pending-details-container" class="funky-details-container">
               <!-- Dynamically populated from JS -->
             </div>
           </div>

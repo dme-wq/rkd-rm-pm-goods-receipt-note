@@ -1012,11 +1012,18 @@ function renderPendingScorecardAndDetails() {
       const vendorName = poMap[po] ? poMap[po].vendorName : 'Unknown Vendor';
       
       detailsHtml += `
-        <div class="pending-entry-card">
-          <div class="pending-entry-po"><i class="fa-solid fa-hashtag"></i> ${po}</div>
-          <div class="pending-entry-vendor"><i class="fa-solid fa-building me-1"></i> ${vendorName}</div>
-          <div class="pending-entry-invoices">
-            ${invoices.map(inv => `<span class="pending-invoice-tag"><i class="fa-solid fa-file-invoice"></i> ${inv}</span>`).join('')}
+        <div class="funky-notification-card">
+          <div class="funky-icon-box">
+            <i class="fa-solid fa-bell fa-shake" style="--fa-animation-duration: 3s;"></i>
+          </div>
+          <div class="funky-card-content">
+            <div class="funky-po">
+              <span class="funky-po-num"><i class="fa-solid fa-hashtag"></i> ${po}</span>
+              <span class="funky-vendor"><i class="fa-solid fa-building me-1"></i> ${vendorName}</span>
+            </div>
+            <div class="funky-invoices">
+              ${invoices.map(inv => `<span class="funky-invoice-tag"><i class="fa-solid fa-file-invoice"></i> ${inv}</span>`).join('')}
+            </div>
           </div>
         </div>
       `;
