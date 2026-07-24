@@ -658,6 +658,7 @@
     function resetFormOptimistically() {
       if (successModalObj) successModalObj.hide();
       document.getElementById('main-inward-form').reset();
+      document.getElementById('vendorInvoiceNumber').innerHTML = '<option value="">-- Select Invoice (Gate Entry) --</option>';
       removePhoto();
       
       state.editMode = false;
@@ -692,6 +693,7 @@
     function resetFormAndCloseSuccessModal() {
       if (successModalObj) successModalObj.hide();
       document.getElementById('main-inward-form').reset();
+      document.getElementById('vendorInvoiceNumber').innerHTML = '<option value="">-- Select Invoice (Gate Entry) --</option>';
       removePhoto();
       
       state.editMode = false;
