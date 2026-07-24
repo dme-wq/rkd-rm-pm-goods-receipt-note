@@ -98,16 +98,9 @@
           <span id="current-date-badge">Date: 23-Jul-2026</span>
         </div>
       </div>
-      <button type="button" class="btn-save-pdf" onclick="openConfirmationModal()">
-        <i class="fa-solid fa-floppy-disk"></i> Save & Submit Inward Entry
-      </button>
-    </div>
 
-    <!-- Main 2-Column Form Layout -->
-    <form id="main-inward-form" onsubmit="handleFormSubmit(event)">
-      <button type="submit" id="submit-btn-real" style="display:none;"></button>
       <!-- Pending Scorecards -->
-      <div id="pending-scorecard-container" style="display:none; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+      <div id="pending-scorecard-container" style="display:none; margin: 0; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
         
         <div class="sc-card sc-blue">
           <div class="sc-header">
@@ -138,6 +131,15 @@
         </div>
 
       </div>
+
+      <button type="button" class="btn-save-pdf" onclick="openConfirmationModal()">
+        <i class="fa-solid fa-floppy-disk"></i> Save & Submit Inward Entry
+      </button>
+    </div>
+
+    <!-- Main 2-Column Form Layout -->
+    <form id="main-inward-form" onsubmit="handleFormSubmit(event)">
+      <button type="submit" id="submit-btn-real" style="display:none;"></button>
 
       <div class="layout-grid">
 
