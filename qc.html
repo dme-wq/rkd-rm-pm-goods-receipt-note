@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Quality Check - RKD System</title>
+  <link rel="stylesheet" href="qc.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- App Bar -->
+  <header class="app-bar">
+    <div class="app-bar-brand">
+      <div class="app-logo">RKD</div>
+      <div class="app-title">Quality Check</div>
+    </div>
+    <button class="btn-icon" onclick="loadQCData(true)" id="btn-refresh">
+      <i class="fa-solid fa-rotate"></i>
+    </button>
+  </header>
+
+  <!-- View: List -->
+  <main id="view-list" class="view-container active-view">
+    <div class="list-header">
+      <h2>Pending Deliveries</h2>
+      <span class="badge-count" id="pending-count">0</span>
+    </div>
+
+    <div id="loading-state" class="center-state">
+      <div class="spinner"></div>
+      <p>Syncing data...</p>
+    </div>
+
+    <div id="empty-state" class="center-state" style="display:none;">
+      <div class="empty-icon"><i class="fa-solid fa-check-circle"></i></div>
+      <h3>All Caught Up!</h3>
+      <p>No pending quality checks found.</p>
+    </div>
+
+    <div id="cards-container" class="cards-list">
+      <!-- Cards will be injected here -->
+    </div>
+  </main>
+
+  <!-- View: Form (Slide-in) -->
+  <main id="view-form" class="view-container slide-right">
+    <header class="form-header">
+      <button class="btn-back" onclick="closeForm()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <h2 id="form-grn-title">GRN/—</h2>
+    </header>
+
+    <div class="form-content">
+      <div class="card-info">
+        <h3 id="form-vendor-name">Vendor Name</h3>
+        <p class="meta-info" id="form-po-info">PO: — | Invoice: —</p>
+        <div id="form-items-tags" class="tags-container mt-2"></div>
+      </div>
+
+      <!-- Step 1: Delivery Status -->
+      <div class="form-section">
+        <label class="section-label">1. Delivery Status <span class="req">*</span></label>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btn-status-completed" onclick="setStatus('Delivery Completed')">
+            <i class="fa-solid fa-check-circle"></i> Completed
+          </button>
+          <button class="toggle-btn" id="btn-status-pending" onclick="setStatus('Delivery Pending')">
+            <i class="fa-solid fa-clock"></i> Pending
+          </button>
+        </div>
+      </div>
+
+      <div id="dynamic-fields" style="display:none;">
+        <!-- Step 2: Passing Person -->
+        <div class="form-section">
+          <label class="section-label">2. Passing Person <span class="req">*</span></label>
+          <div class="radio-grid" id="person-grid"></div>
+        </div>
+
+        <!-- Step 3: Checklist Picture -->
+        <div class="form-section">
+          <label class="section-label">3. Checklist Picture <span class="req">*</span></label>
+          <div class="upload-area" id="zone-checklist" onclick="document.getElementById('input-checklist').click()">
+            <i class="fa-solid fa-camera mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
+            <div>Tap to Capture</div>
+          </div>
+          <input type="file" id="input-checklist" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'checklist')">
+          <div id="preview-checklist" class="img-preview" style="display:none;"></div>
+          <div class="progress-wrap" id="progress-checklist" style="display:none;">
+            <div class="progress-bar"></div>
+            <span>Uploading...</span>
+          </div>
+        </div>
+
+        <!-- Step 4: Invoice Picture -->
+        <div class="form-section">
+          <label class="section-label">4. Invoice Picture <span class="req">*</span></label>
+          <div class="upload-area" id="zone-invoice" onclick="document.getElementById('input-invoice').click()">
+            <i class="fa-solid fa-file-invoice mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
+            <div>Tap to Capture</div>
+          </div>
+          <input type="file" id="input-invoice" accept="image/*" capture="environment" hidden onchange="handleFile(this, 'invoice')">
+          <div id="preview-invoice" class="img-preview" style="display:none;"></div>
+          <div class="progress-wrap" id="progress-invoice" style="display:none;">
+            <div class="progress-bar"></div>
+            <span>Uploading...</span>
+          </div>
+        </div>
+
+        <!-- Step 5: Anything to Return -->
+        <div class="form-section">
+          <label class="section-label">5. Anything to return?</label>
+          <div class="radio-grid">
+            <label class="radio-option">
+              <input type="radio" name="return_opt" value="No" checked onchange="toggleReturnInput()"> No
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="return_opt" value="Other" onchange="toggleReturnInput()"> Other
+            </label>
+          </div>
+          <input type="text" id="return-detail" class="input-text mt-2" placeholder="Describe return..." style="display:none;">
+        </div>
+
+        <!-- Step 6: Next Delivery Date (Pending Only) -->
+        <div class="form-section" id="section-next-date" style="display:none;">
+          <label class="section-label">6. Next Delivery Date <span class="req">*</span></label>
+          <input type="date" id="input-next-date" class="input-text">
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-action-bar" id="action-bar" style="display:none;">
+      <button class="btn-primary" id="btn-submit" onclick="submitForm()">
+        <i class="fa-solid fa-paper-plane"></i> Submit Entry
+      </button>
+    </div>
+  </main>
+
+  <!-- Success Overlay -->
+  <div id="success-overlay" class="success-overlay" style="display:none;">
+    <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+    <h2>Entry Saved!</h2>
+    <p>The Quality Check is complete.</p>
+  </div>
+
+  <script src="qc.js"></script>
+</body>
+</html>
