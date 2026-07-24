@@ -150,6 +150,9 @@
         document.getElementById('grnNoDisplay').value = grn;
         document.getElementById('top-grn-span').innerText = grn;
       }
+      
+      // Render pending scorecard and details
+      renderPendingScorecardAndDetails();
     }
 
     function loadMasterDataInstant() {
@@ -324,7 +327,8 @@
     function switchTab(tab) {
       document.getElementById('main-inward-form').style.display   = tab === 'form'           ? 'block' : 'none';
       document.getElementById('history-view').style.display       = tab === 'history'         ? 'block' : 'none';
-      document.getElementById('quality-check-view').style.display = tab === 'quality-check'   ? 'block' : 'none';
+      const qcView = document.getElementById('quality-check-view');
+      if (qcView) qcView.style.display = tab === 'quality-check' ? 'block' : 'none';
 
       // Hide Save & Submit Inward Entry button when not on form
       const saveBtn = document.querySelector('.btn-save-pdf');
@@ -798,6 +802,25 @@
       
       const header = records[0];
 
+      // Passcode check for next-day edits
+      if (header.timestamp) {
+        const entryDate = new Date(header.timestamp);
+        if (!isNaN(entryDate.getTime())) {
+          const today = new Date();
+          const isToday = (entryDate.getFullYear() === today.getFullYear() && 
+                           entryDate.getMonth() === today.getMonth() && 
+                           entryDate.getDate() === today.getDate());
+          
+          if (!isToday) {
+            const pass = prompt("This is a past date entry. Please enter Admin Passcode to edit:");
+            if (pass !== '0548') {
+              alert("Incorrect passcode! You are not authorized to edit past entries.");
+              return;
+            }
+          }
+        }
+      }
+
       // ── Vendor Details ──
       // Inject PO number as an option if not already present (handles completed/filtered-out POs)
       const poSel = document.getElementById('vendorPoNumber');
@@ -958,3 +981,62 @@
 
 
 
+/* ─── Pending Entries Dashboard Logic ─── */
+function renderPendingScorecardAndDetails() {
+  const scorecardContainer = document.getElementById('pending-scorecard-container');
+  const detailsPanel = document.getElementById('pending-details-panel');
+  const detailsContainer = document.getElementById('pending-details-container');
+  
+  if (!scorecardContainer || !detailsPanel || !detailsContainer) return;
+  
+  if (!state.masterData || !state.masterData.poList || !state.masterData.gateEntryInvoicesMap) {
+    scorecardContainer.style.display = 'none';
+    detailsPanel.style.display = 'none';
+    return;
+  }
+  
+  const poList = state.masterData.poList;
+  const invoicesMap = state.masterData.gateEntryInvoicesMap;
+  const poMap = state.masterData.poMap || {};
+  
+  let totalPendingPOs = poList.length;
+  let totalPendingInvoices = 0;
+  
+  let detailsHtml = '';
+  
+  poList.forEach(po => {
+    const invoices = invoicesMap[po] || [];
+    if (invoices.length > 0) {
+      totalPendingInvoices += invoices.length;
+      
+      const vendorName = poMap[po] ? poMap[po].vendorName : 'Unknown Vendor';
+      
+      detailsHtml += `
+        <div class="pending-entry-card">
+          <div class="pending-entry-po"><i class="fa-solid fa-hashtag"></i> ${po}</div>
+          <div class="pending-entry-vendor"><i class="fa-solid fa-building me-1"></i> ${vendorName}</div>
+          <div class="pending-entry-invoices">
+            ${invoices.map(inv => `<span class="pending-invoice-tag"><i class="fa-solid fa-file-invoice"></i> ${inv}</span>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  // Update Scorecards
+  const scorecardPo = document.getElementById('scorecard-po');
+  const scorecardInvoice = document.getElementById('scorecard-invoice');
+  if (scorecardPo) scorecardPo.innerText = totalPendingPOs;
+  if (scorecardInvoice) scorecardInvoice.innerText = totalPendingInvoices;
+  
+  if (totalPendingPOs > 0) {
+    scorecardContainer.style.display = 'grid';
+    detailsPanel.style.display = 'block';
+    detailsContainer.innerHTML = detailsHtml;
+  } else {
+    // Show 0 scorecard
+    scorecardContainer.style.display = 'grid';
+    detailsPanel.style.display = 'block';
+    detailsContainer.innerHTML = `<div style="text-align:center; color:var(--success); padding: 15px; font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:2rem; display:block; margin-bottom:8px;"></i> All Caught Up! No pending Gate Entries.</div>`;
+  }
+}

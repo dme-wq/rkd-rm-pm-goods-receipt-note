@@ -106,6 +106,23 @@
     <!-- Main 2-Column Form Layout -->
     <form id="main-inward-form" onsubmit="handleFormSubmit(event)">
       <button type="submit" id="submit-btn-real" style="display:none;"></button>
+      <!-- Pending Scorecards -->
+      <div id="pending-scorecard-container" style="display:none; margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="scorecard-modern" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
+           <div class="scorecard-icon"><i class="fa-solid fa-folder-open"></i></div>
+           <div class="scorecard-info">
+             <div class="scorecard-label">Pending POs</div>
+             <div class="scorecard-value" id="scorecard-po">0</div>
+           </div>
+        </div>
+        <div class="scorecard-modern" style="background: linear-gradient(135deg, #065f46, #10b981);">
+           <div class="scorecard-icon"><i class="fa-solid fa-file-invoice"></i></div>
+           <div class="scorecard-info">
+             <div class="scorecard-label">Pending Invoices</div>
+             <div class="scorecard-value" id="scorecard-invoice">0</div>
+           </div>
+        </div>
+      </div>
 
       <div class="layout-grid">
 
@@ -228,6 +245,16 @@
                 <img id="preview-img" src="" style="width:50px; height:50px; border-radius:6px; object-fit:cover;">
                 <button type="button" style="border:none; background:transparent; color:red; cursor:pointer;" onclick="removePhoto()">&times;</button>
               </div>
+            </div>
+          </div>
+
+          <!-- Pending Inward Details Section -->
+          <div class="card-panel" id="pending-details-panel" style="display:none; border: 2px dashed var(--accent-primary); background: #f8fafc; margin-top: 20px;">
+            <div class="card-title">
+              <span><i class="fa-solid fa-list-check me-2" style="color:var(--accent-primary);"></i> Pending Gate Entries (Not Inwarded)</span>
+            </div>
+            <div id="pending-details-container" style="display:flex; flex-direction:column; gap:10px;">
+              <!-- Dynamically populated from JS -->
             </div>
           </div>
 
