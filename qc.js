@@ -10,7 +10,9 @@ let state = {
   status: null,
   checklistUrl: null,
   invoiceUrl: null,
-  photoBase64: null
+  photoBase64: null,
+  qcEditMode: false,
+  qcEditData: null
 };
 
 async function callBackend(funcName, params = []) {
@@ -171,6 +173,8 @@ function openForm(grn) {
   `;
 
   // Reset Form state
+  state.qcEditMode = false;
+  state.qcEditData = null;
   setStatus(null);
   state.checklistUrl = null;
   state.invoiceUrl = null;
@@ -189,6 +193,9 @@ function closeForm() {
   document.getElementById('view-form').classList.remove('active-view');
   document.getElementById('view-list').classList.add('active-view');
   state.selectedGRN = null;
+  state.qcEditMode = false;
+  state.qcEditData = null;
+  document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Entry';
 }
 
 function setStatus(statusValue) {
@@ -381,7 +388,7 @@ async function submitForm() {
   btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;margin:0;"></div>';
 
   try {
-    const data = await callBackend('saveQualityCheckEntry', [{
+    const payload = {
       grnNo: state.selectedGRN.grnNo,
       deliveryStatus: state.status,
       passingPerson: passingPersonVal,
@@ -390,7 +397,14 @@ async function submitForm() {
       anythingToReturn: returnText,
       nextDeliveryDate: nextDate,
       email: ''
-    }]);
+    };
+    
+    const actionName = state.qcEditMode ? 'updateQualityCheckEntry' : 'saveQualityCheckEntry';
+    if (state.qcEditMode) {
+      payload.rowNum = state.qcEditData.rowNum;
+    }
+    
+    const data = await callBackend(actionName, [payload]);
     
     if (data.status === 'success') {
       document.getElementById('success-overlay').style.display = 'flex';
@@ -454,15 +468,197 @@ function renderHistory() {
     return;
   }
   
-  container.innerHTML = filtered.map(qc => `
-    <div class="history-card">
-      <div class="history-card-header">
-        <div class="history-grn">${qc.grnNo}</div>
-        <div class="history-badge"><i class="fa-solid fa-check"></i> ${qc.deliveryStatus || 'QC Done'}</div>
+  container.innerHTML = filtered.map((qc, index) => {
+    // Map filtered index to original state.completedQCs array index
+    const origIndex = state.completedQCs.findIndex(q => q.rowNum === qc.rowNum);
+    return `
+      <div class="history-card" onclick="openHistoryDetail(${origIndex})">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div class="hc-grn">${qc.grnNo}</div>
+          <div class="hc-icon"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+        <div class="hc-meta"><i class="fa-solid fa-user" style="color:var(--primary-light)"></i> ${qc.passingPerson || 'N/A'}</div>
+        <div class="hc-time"><i class="fa-solid fa-calendar"></i> ${qc.timestamp}</div>
       </div>
-      <div class="history-detail"><i class="fa-solid fa-user me-1" style="color:var(--primary-light)"></i> ${qc.passingPerson || 'N/A'}</div>
-      <div class="history-date"><i class="fa-solid fa-calendar me-1"></i> QC Time: ${qc.timestamp}</div>
-      ${qc.nextDeliveryDate ? `<div class="history-date" style="color:var(--warning)"><i class="fa-solid fa-truck-fast me-1"></i> Next Delivery: ${qc.nextDeliveryDate}</div>` : ''}
+    `;
+  }).join('');
+}
+
+function openHistoryDetail(index) {
+  const qc = state.completedQCs[index];
+  if (!qc) return;
+  
+  const statusClass = qc.deliveryStatus === 'Delivery Completed' ? 'ds-completed' : 'ds-pending';
+  
+  const bodyHtml = `
+    <div class="detail-item">
+      <div class="detail-label">GRN Number</div>
+      <div class="detail-value">${qc.grnNo}</div>
     </div>
+    
+    <div class="detail-item">
+      <div class="detail-label">Status</div>
+      <div class="detail-status-badge ${statusClass}">${qc.deliveryStatus || 'N/A'}</div>
+    </div>
+
+    <div class="detail-item">
+      <div class="detail-label">Passing Person</div>
+      <div class="detail-value">${qc.passingPerson || 'N/A'}</div>
+    </div>
+    
+    <div class="detail-item">
+      <div class="detail-label">QC Timestamp</div>
+      <div class="detail-value">${qc.timestamp}</div>
+    </div>
+    
+    ${qc.deliveryStatus === 'Delivery Pending' ? `
+      <div class="detail-item">
+        <div class="detail-label">Next Delivery Date</div>
+        <div class="detail-value" style="color:var(--warning)">${qc.nextDeliveryDate || 'N/A'}</div>
+      </div>
+    ` : ''}
+
+    <div class="detail-item">
+      <div class="detail-label">Anything to Return</div>
+      <div class="detail-value">${qc.anythingToReturn || 'No'}</div>
+    </div>
+
+    <div class="detail-item">
+      <div class="detail-label">Pictures</div>
+      <div class="thumb-grid">
+        <div class="thumb-box" onclick="openImageViewer('${qc.checklistPicUrl}')">
+          ${qc.checklistPicUrl ? `<img src="${qc.checklistPicUrl}"> <div class="thumb-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>` : '<div class="thumb-none">No Image</div>'}
+          <div class="thumb-label">Checklist</div>
+        </div>
+        <div class="thumb-box" onclick="openImageViewer('${qc.invoicePicUrl}')">
+          ${qc.invoicePicUrl ? `<img src="${qc.invoicePicUrl}"> <div class="thumb-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>` : '<div class="thumb-none">No Image</div>'}
+          <div class="thumb-label">Invoice</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('hist-modal-body').innerHTML = bodyHtml;
+  
+  const isToday = qc.timestamp.substring(0, 10) === new Date().toLocaleDateString('en-GB').replace(/\\//g, '-');
+  const footer = document.getElementById('hist-modal-footer');
+  if (isToday) {
+    footer.style.display = 'block';
+    document.getElementById('btn-edit-history').onclick = () => editQCEntry(index);
+  } else {
+    footer.style.display = 'none';
+  }
+  
+  document.getElementById('history-modal').style.display = 'flex';
+}
+
+function closeHistoryDetail() {
+  document.getElementById('history-modal').style.display = 'none';
+}
+
+function openImageViewer(url) {
+  if (!url || url === 'undefined') return;
+  document.getElementById('iv-img').src = url;
+  document.getElementById('image-viewer').style.display = 'flex';
+}
+
+function closeImageViewer() {
+  document.getElementById('image-viewer').style.display = 'none';
+  document.getElementById('iv-img').src = '';
+}
+
+function editQCEntry(index) {
+  const qc = state.completedQCs[index];
+  if (!qc) return;
+  
+  closeHistoryDetail();
+  closeHistory(); // Go back to main view but we will directly jump to form view
+  
+  state.qcEditMode = true;
+  state.qcEditData = qc;
+  
+  // Set basic form state
+  state.selectedGRN = { grnNo: qc.grnNo }; // Mock the selected GRN object
+  state.status = qc.deliveryStatus || 'Delivery Completed';
+  state.checklistUrl = qc.checklistPicUrl || null;
+  state.invoiceUrl = qc.invoicePicUrl || null;
+  
+  // Navigate to form view
+  document.getElementById('view-list').classList.remove('active-view');
+  document.getElementById('view-list').classList.add('slide-right');
+  document.getElementById('view-form').classList.remove('slide-right');
+  document.getElementById('view-form').classList.add('active-view');
+  document.getElementById('action-bar').style.display = 'block';
+  
+  // Populate form fields
+  document.getElementById('form-grn-title').innerText = qc.grnNo;
+  
+  // Status Buttons
+  document.getElementById('btn-completed').classList.toggle('active', state.status === 'Delivery Completed');
+  document.getElementById('btn-pending').classList.toggle('active', state.status === 'Delivery Pending');
+  document.getElementById('section-next-date').style.display = state.status === 'Delivery Pending' ? 'block' : 'none';
+  if (state.status === 'Delivery Pending' && qc.nextDeliveryDate) {
+    document.getElementById('input-next-date').value = qc.nextDeliveryDate;
+  }
+  
+  // Passing Person
+  const isCustomPerson = !state.passingPersons.includes(qc.passingPerson);
+  const grid = document.getElementById('person-grid');
+  let radioHtml = state.passingPersons.map((p, idx) => `
+    <label class="radio-option">
+      <input type="radio" name="passing_person" value="${p}" ${!isCustomPerson && p === qc.passingPerson ? 'checked' : ''} onchange="toggleCustomPerson()">
+      <span class="radio-label">${p}</span>
+    </label>
   `).join('');
+  radioHtml += `
+    <label class="radio-option">
+      <input type="radio" name="passing_person" value="Other" ${isCustomPerson ? 'checked' : ''} onchange="toggleCustomPerson()">
+      <span class="radio-label">+ Add New</span>
+    </label>
+  `;
+  grid.innerHTML = radioHtml;
+  
+  const customInput = document.getElementById('custom-person-input');
+  if (isCustomPerson) {
+    customInput.style.display = 'block';
+    customInput.value = qc.passingPerson;
+  } else {
+    customInput.style.display = 'none';
+    customInput.value = '';
+  }
+  
+  // Thumbnails pre-fill visually
+  if (state.checklistUrl) {
+    document.getElementById('zone-checklist').style.display = 'none';
+    const preview = document.getElementById('preview-checklist');
+    preview.style.display = 'block';
+    preview.innerHTML = `<img src="${state.checklistUrl}" style="max-height:160px;">
+      <button type="button" class="img-remove-btn" onclick="resetUpload('checklist')">
+        <i class="fa-solid fa-times"></i>
+      </button>`;
+  }
+  if (state.invoiceUrl) {
+    document.getElementById('zone-invoice').style.display = 'none';
+    const preview = document.getElementById('preview-invoice');
+    preview.style.display = 'block';
+    preview.innerHTML = `<img src="${state.invoiceUrl}" style="max-height:160px;">
+      <button type="button" class="img-remove-btn" onclick="resetUpload('invoice')">
+        <i class="fa-solid fa-times"></i>
+      </button>`;
+  }
+  
+  // Return Notes
+  const returnDetail = document.getElementById('return-detail');
+  if (qc.anythingToReturn && qc.anythingToReturn !== 'No') {
+    document.querySelector('input[name="return_opt"][value="Other"]').checked = true;
+    returnDetail.style.display = 'block';
+    returnDetail.value = qc.anythingToReturn;
+  } else {
+    document.querySelector('input[name="return_opt"][value="No"]').checked = true;
+    returnDetail.style.display = 'none';
+    returnDetail.value = '';
+  }
+  
+  // Change submit button text
+  document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Update QC Entry';
 }
