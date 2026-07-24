@@ -3,20 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Quality Check - RKD System</title>
+  <title>RM/PM Quality Check Dashboard — RKD</title>
+  <link rel="icon" href="https://static.wixstatic.com/media/68b92a_d71e34133826499983234774dea1945b~mv2.png/v1/fill/w_186,h_156,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/RKD-Logo.png" type="image/png">
   <link rel="stylesheet" href="qc.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <!-- App Bar -->
   <header class="app-bar">
     <div class="app-bar-brand">
-      <div class="app-logo">RKD</div>
-      <div class="app-title">Quality Check</div>
+      <img src="https://static.wixstatic.com/media/68b92a_d71e34133826499983234774dea1945b~mv2.png/v1/fill/w_186,h_156,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/RKD-Logo.png" alt="RKD Logo" class="header-logo">
+      <div class="header-text">
+        <div class="header-title">RM/PM Quality Check</div>
+        <div class="header-sub">Dashboard</div>
+      </div>
     </div>
-    <button class="btn-icon" onclick="loadQCData(true)" id="btn-refresh">
+    <button class="btn-icon" onclick="loadQCData(true)" id="btn-refresh" title="Refresh">
       <i class="fa-solid fa-rotate"></i>
     </button>
   </header>
@@ -24,51 +28,60 @@
   <!-- View: List -->
   <main id="view-list" class="view-container active-view">
     <div class="list-header">
-      <h2>Pending Deliveries</h2>
-      <span class="badge-count" id="pending-count">0</span>
+      <div>
+        <div class="list-title">Pending Inspections</div>
+        <div class="list-sub">Latest 25 entries</div>
+      </div>
+      <span class="badge-count" id="pending-count">—</span>
     </div>
 
     <div id="loading-state" class="center-state">
-      <div class="spinner"></div>
-      <p>Syncing data...</p>
+      <div class="pulse-loader">
+        <span></span><span></span><span></span>
+      </div>
+      <p class="loading-text">Syncing data...</p>
     </div>
 
     <div id="empty-state" class="center-state" style="display:none;">
-      <div class="empty-icon"><i class="fa-solid fa-check-circle"></i></div>
+      <div class="empty-icon"><i class="fa-solid fa-circle-check"></i></div>
       <h3>All Caught Up!</h3>
       <p>No pending quality checks found.</p>
     </div>
 
-    <div id="cards-container" class="cards-list">
-      <!-- Cards will be injected here -->
-    </div>
+    <div id="cards-container" class="cards-list"></div>
   </main>
 
-  <!-- View: Form (Slide-in) -->
+  <!-- View: Form -->
   <main id="view-form" class="view-container slide-right">
     <header class="form-header">
       <button class="btn-back" onclick="closeForm()">
         <i class="fa-solid fa-arrow-left"></i>
       </button>
-      <h2 id="form-grn-title">GRN/—</h2>
+      <div>
+        <div class="form-header-title" id="form-grn-title">GRN/—</div>
+        <div class="form-header-sub">Quality Inspection</div>
+      </div>
     </header>
 
     <div class="form-content">
-      <div class="card-info">
-        <h3 id="form-vendor-name">Vendor Name</h3>
-        <p class="meta-info" id="form-po-info">PO: — | Invoice: —</p>
+      <!-- GRN Info Card -->
+      <div class="grn-info-card">
+        <div class="grn-info-vendor" id="form-vendor-name">Vendor Name</div>
+        <div class="grn-info-meta" id="form-po-info">PO: — | Invoice: —</div>
         <div id="form-items-tags" class="tags-container mt-2"></div>
       </div>
 
       <!-- Step 1: Delivery Status -->
       <div class="form-section">
-        <label class="section-label">1. Delivery Status <span class="req">*</span></label>
+        <div class="step-label"><span class="step-num">1</span> Delivery Status <span class="req">*</span></div>
         <div class="toggle-group">
           <button class="toggle-btn" id="btn-status-completed" onclick="setStatus('Delivery Completed')">
-            <i class="fa-solid fa-check-circle"></i> Completed
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Completed</span>
           </button>
           <button class="toggle-btn" id="btn-status-pending" onclick="setStatus('Delivery Pending')">
-            <i class="fa-solid fa-clock"></i> Pending
+            <i class="fa-solid fa-clock"></i>
+            <span>Pending</span>
           </button>
         </div>
       </div>
@@ -76,16 +89,16 @@
       <div id="dynamic-fields" style="display:none;">
         <!-- Step 2: Passing Person -->
         <div class="form-section">
-          <label class="section-label">2. Passing Person <span class="req">*</span></label>
+          <div class="step-label"><span class="step-num">2</span> Passing Person <span class="req">*</span></div>
           <div class="radio-grid" id="person-grid"></div>
         </div>
 
         <!-- Step 3: Checklist Picture -->
         <div class="form-section">
-          <label class="section-label">3. Checklist Picture <span class="req">*</span></label>
+          <div class="step-label"><span class="step-num">3</span> Checklist Picture <span class="req">*</span></div>
           <div class="upload-area" id="zone-checklist">
-            <i class="fa-solid fa-camera mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
-            <div style="margin-bottom:10px;">Checklist Photo</div>
+            <i class="fa-solid fa-camera upload-icon"></i>
+            <div class="upload-label">Passing Checklist</div>
             <div class="upload-btns">
               <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-checklist-cam').click()">
                 <i class="fa-solid fa-camera"></i> Camera
@@ -99,17 +112,17 @@
           <input type="file" id="input-checklist-gal" accept="image/*" hidden onchange="handleFile(this, 'checklist')">
           <div id="preview-checklist" class="img-preview" style="display:none;"></div>
           <div class="progress-wrap" id="progress-checklist" style="display:none;">
-            <div class="progress-bar"></div>
+            <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
             <span id="progress-checklist-text">Compressing...</span>
           </div>
         </div>
 
         <!-- Step 4: Invoice Picture -->
         <div class="form-section">
-          <label class="section-label">4. Invoice Picture <span class="req">*</span></label>
+          <div class="step-label"><span class="step-num">4</span> Invoice Picture <span class="req">*</span></div>
           <div class="upload-area" id="zone-invoice">
-            <i class="fa-solid fa-file-invoice mb-1" style="font-size:1.5rem; color:var(--primary);"></i>
-            <div style="margin-bottom:10px;">Invoice Photo</div>
+            <i class="fa-solid fa-file-invoice upload-icon"></i>
+            <div class="upload-label">Bill / Invoice</div>
             <div class="upload-btns">
               <button type="button" class="btn-upload-opt" onclick="document.getElementById('input-invoice-cam').click()">
                 <i class="fa-solid fa-camera"></i> Camera
@@ -123,20 +136,22 @@
           <input type="file" id="input-invoice-gal" accept="image/*" hidden onchange="handleFile(this, 'invoice')">
           <div id="preview-invoice" class="img-preview" style="display:none;"></div>
           <div class="progress-wrap" id="progress-invoice" style="display:none;">
-            <div class="progress-bar"></div>
+            <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
             <span id="progress-invoice-text">Compressing...</span>
           </div>
         </div>
 
         <!-- Step 5: Anything to Return -->
         <div class="form-section">
-          <label class="section-label">5. Anything to return?</label>
-          <div class="radio-grid">
+          <div class="step-label"><span class="step-num">5</span> Anything to Return?</div>
+          <div class="radio-grid-2">
             <label class="radio-option">
-              <input type="radio" name="return_opt" value="No" checked onchange="toggleReturnInput()"> No
+              <input type="radio" name="return_opt" value="No" checked onchange="toggleReturnInput()">
+              <span class="radio-label">No</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="return_opt" value="Other" onchange="toggleReturnInput()"> Other
+              <input type="radio" name="return_opt" value="Other" onchange="toggleReturnInput()">
+              <span class="radio-label">Other</span>
             </label>
           </div>
           <input type="text" id="return-detail" class="input-text mt-2" placeholder="Describe return..." style="display:none;">
@@ -144,13 +159,14 @@
 
         <!-- Step 6: Next Delivery Date (Pending Only) -->
         <div class="form-section" id="section-next-date" style="display:none;">
-          <label class="section-label">6. Next Delivery Date <span class="req">*</span></label>
+          <div class="step-label"><span class="step-num">6</span> Next Delivery Date <span class="req">*</span></div>
           <input type="date" id="input-next-date" class="input-text">
         </div>
       </div>
+    </div>
   </main>
 
-  <!-- Bottom Action Bar (outside form so position:fixed works on mobile) -->
+  <!-- Bottom Action Bar -->
   <div class="bottom-action-bar" id="action-bar" style="display:none;">
     <button class="btn-primary" id="btn-submit" onclick="submitForm()">
       <i class="fa-solid fa-paper-plane"></i> Submit Entry
@@ -159,9 +175,11 @@
 
   <!-- Success Overlay -->
   <div id="success-overlay" class="success-overlay" style="display:none;">
-    <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-    <h2>Entry Saved!</h2>
-    <p>The Quality Check is complete.</p>
+    <div class="success-anim">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <h2>Entry Submitted!</h2>
+    <p>Quality Check recorded successfully.</p>
   </div>
 
   <script src="qc.js"></script>

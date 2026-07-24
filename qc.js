@@ -80,28 +80,39 @@ function renderCards() {
     document.getElementById('empty-state').style.display = 'flex';
     return;
   }
+  document.getElementById('empty-state').style.display = 'none';
 
-  state.pendingGRNs.forEach(grn => {
+  state.pendingGRNs.forEach((grn, idx) => {
     const card = document.createElement('div');
-    card.className = 'card';
+    card.className = 'grn-card';
     
-    let itemsHtml = (grn.items || []).map(i => `<span class="tag">${i.name}</span>`).join('');
-    
+    const itemsHtml = (grn.items || []).map(i =>
+      `<span class="tag">${i.name}${i.qty ? ` (${i.qty} ${i.unit})` : ''}</span>`
+    ).join('');
+
     card.innerHTML = `
-      <div class="card-grn">${grn.grnNo}</div>
-      <div class="card-vendor">${grn.vendorName}</div>
-      <div class="card-meta">
-        <div><i class="fa-solid fa-file-invoice"></i> ${grn.invoiceNo || 'N/A'}</div>
-        <div><i class="fa-solid fa-calendar"></i> ${grn.inwardDate}</div>
+      <div class="card-accent-bar"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-grn">${grn.grnNo}</span>
+          <span class="card-date"><i class="fa-regular fa-calendar"></i> ${grn.inwardDate || '—'}</span>
+        </div>
+        <div class="card-vendor">${grn.vendorName || '—'}</div>
+        <div class="card-meta-row">
+          <span class="card-meta-item"><i class="fa-solid fa-file-invoice"></i> ${grn.invoiceNo || 'N/A'}</span>
+          <span class="card-meta-item"><i class="fa-solid fa-hashtag"></i> ${grn.poNumber || 'N/A'}</span>
+        </div>
+        <div class="tags-container">${itemsHtml}</div>
+        <button class="btn-card-action" onclick='openFormById("${grn.grnNo}")'>
+          <i class="fa-solid fa-clipboard-check"></i> Start Inspection
+          <i class="fa-solid fa-arrow-right ms-1"></i>
+        </button>
       </div>
-      <div class="tags-container mb-1">${itemsHtml}</div>
-      <button class="btn-card-action" onclick='openFormById("${grn.grnNo}")'>
-        Start Inspection <i class="fa-solid fa-arrow-right ms-1"></i>
-      </button>
     `;
     container.appendChild(card);
   });
 }
+
 
 function openFormById(grnNo) {
   const grn = state.pendingGRNs.find(g => g.grnNo === grnNo);
