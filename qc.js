@@ -468,11 +468,9 @@ function renderHistory() {
     return;
   }
   
-  container.innerHTML = filtered.map((qc, index) => {
-    // Map filtered index to original state.completedQCs array index
-    const origIndex = state.completedQCs.findIndex(q => q.rowNum === qc.rowNum);
+  container.innerHTML = filtered.map((qc) => {
     return `
-      <div class="history-card" onclick="openHistoryDetail(${origIndex})">
+      <div class="history-card" onclick="openHistoryDetailByGRN('${qc.grnNo}')">
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
           <div class="hc-grn">${qc.grnNo}</div>
           <div class="hc-icon"><i class="fa-solid fa-chevron-right"></i></div>
@@ -484,7 +482,8 @@ function renderHistory() {
   }).join('');
 }
 
-function openHistoryDetail(index) {
+function openHistoryDetailByGRN(grnNo) {
+  const index = state.completedQCs.findIndex(q => q.grnNo === grnNo);
   const qc = state.completedQCs[index];
   if (!qc) return;
   
@@ -540,7 +539,7 @@ function openHistoryDetail(index) {
   
   document.getElementById('hist-modal-body').innerHTML = bodyHtml;
   
-  const isToday = qc.timestamp.substring(0, 10) === new Date().toLocaleDateString('en-GB').replace(/\\//g, '-');
+  const isToday = qc.timestamp.substring(0, 10) === new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
   const footer = document.getElementById('hist-modal-footer');
   if (isToday) {
     footer.style.display = 'block';
