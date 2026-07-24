@@ -294,7 +294,14 @@
     <div id="history-view" class="card-panel" style="display:none;">
       <div class="card-title">
         <span><i class="fa-solid fa-database me-2"></i> Inward Records Database Grid (Last 500 Entries - Newest First)</span>
-        <button class="btn-action-sec" onclick="loadInwardHistory(true)"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button type="button" class="btn-action-sec" style="color:var(--accent-primary); border-color:var(--accent-primary); font-weight:700;" onclick="switchTab('form')">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Main Page
+          </button>
+          <button type="button" class="btn-action-sec" onclick="loadInwardHistory(true)">
+            <i class="fa-solid fa-rotate me-1"></i> Refresh
+          </button>
+        </div>
       </div>
 
       <!-- Modern Dependent Filter Toolbar -->

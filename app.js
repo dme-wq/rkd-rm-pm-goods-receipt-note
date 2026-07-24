@@ -324,6 +324,13 @@
     function switchTab(tab) {
       document.getElementById('main-inward-form').style.display = tab === 'form' ? 'block' : 'none';
       document.getElementById('history-view').style.display = tab === 'history' ? 'block' : 'none';
+      
+      // Hide Save & Submit Inward Entry button when on Inward Records tab
+      const saveBtn = document.querySelector('.btn-save-pdf');
+      if (saveBtn) {
+        saveBtn.style.display = tab === 'form' ? 'inline-flex' : 'none';
+      }
+
       if (tab === 'history') {
         // Only reload if no data yet or explicitly requested
         if (!state.historyRecords || state.historyRecords.length === 0) {
