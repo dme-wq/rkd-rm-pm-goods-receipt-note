@@ -380,7 +380,6 @@ async function submitForm() {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Entry';
   }
-  }
 }
 
 /* ─── History View Logic ─── */
