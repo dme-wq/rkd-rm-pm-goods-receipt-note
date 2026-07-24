@@ -50,10 +50,10 @@
   <header class="top-header">
     <div class="header-nav-left">
       <button class="btn-nav-back" onclick="switchTab('history')">
-        <i class="fa-solid fa-list-check"></i> <span class="btn-nav-text">Inward Records</span>
+        <i class="fa-solid fa-list-check"></i> Inward Records
       </button>
       <button class="btn-nav-back" onclick="switchTab('form')">
-        <i class="fa-solid fa-plus"></i> <span class="btn-nav-text">New Entry Form</span>
+        <i class="fa-solid fa-plus"></i> New Entry Form
       </button>
     </div>
 
@@ -107,50 +107,6 @@
       <button type="submit" id="submit-btn-real" style="display:none;"></button>
 
       <div class="layout-grid">
-
-        <!-- RIGHT COLUMN (Sidebar): rendered first in DOM for mobile order -->
-        <div class="sidebar-column">
-          
-          <div class="card-panel">
-            <div class="card-title">
-              <span><i class="fa-solid fa-circle-info me-2" style="color:var(--accent-primary);"></i> General Information</span>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap: 1.25rem;">
-              
-              <div class="form-group">
-                <label for="inwardDate">Inward Date <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(आवक की तारीख)</small></label>
-                <input type="date" id="inwardDate" class="form-control" required>
-              </div>
-
-              <div class="form-group">
-                <label for="vendorInvoiceDate">Vendor Bill/Invoice Date <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(बिल/चालान की तारीख)</small></label>
-                <input type="date" id="vendorInvoiceDate" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="receivingPerson">Receiving Person <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(सामान प्राप्त करने वाला व्यक्ति)</small></label>
-                <select id="receivingPerson" class="form-control" required>
-                  <option value="">-- Select Receiving Person --</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="receivingLocation">Receiving Location <span class="req">*</span> <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(सामान प्राप्त करने का स्थान)</small></label>
-                <select id="receivingLocation" class="form-control" required>
-                  <option value="">-- Select Location --</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="grnNoDisplay">Generated GRN No. <small style="display:block; color:var(--text-muted); font-weight:400; font-size:0.85em;">(जनरेटेड जीआरएन नंबर)</small></label>
-                <input type="text" id="grnNoDisplay" class="form-control" style="font-family:monospace; font-weight:700; color:var(--accent-primary);" readonly>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
 
         <!-- LEFT COLUMN: Vendor Details & Line Items -->
         <div class="main-column">
