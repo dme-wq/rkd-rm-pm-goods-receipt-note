@@ -107,21 +107,36 @@
     <form id="main-inward-form" onsubmit="handleFormSubmit(event)">
       <button type="submit" id="submit-btn-real" style="display:none;"></button>
       <!-- Pending Scorecards -->
-      <div id="pending-scorecard-container" style="display:none; margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-        <div class="scorecard-modern" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">
-           <div class="scorecard-icon"><i class="fa-solid fa-folder-open"></i></div>
-           <div class="scorecard-info">
-             <div class="scorecard-label">Pending POs</div>
-             <div class="scorecard-value" id="scorecard-po">0</div>
-           </div>
+      <div id="pending-scorecard-container" style="display:none; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+        
+        <div class="sc-card sc-blue">
+          <div class="sc-header">
+            <div class="sc-dot"></div>
+            <span class="sc-title">Pending POs</span>
+          </div>
+          <div class="sc-body">
+            <div class="sc-value-group">
+              <span class="sc-value" id="scorecard-po">0</span>
+              <span class="sc-label">POs</span>
+            </div>
+            <i class="fa-solid fa-angles-right sc-icon"></i>
+          </div>
         </div>
-        <div class="scorecard-modern" style="background: linear-gradient(135deg, #065f46, #10b981);">
-           <div class="scorecard-icon"><i class="fa-solid fa-file-invoice"></i></div>
-           <div class="scorecard-info">
-             <div class="scorecard-label">Pending Invoices</div>
-             <div class="scorecard-value" id="scorecard-invoice">0</div>
-           </div>
+        
+        <div class="sc-card sc-green">
+          <div class="sc-header">
+            <div class="sc-dot"></div>
+            <span class="sc-title">Pending Invoices</span>
+          </div>
+          <div class="sc-body">
+            <div class="sc-value-group">
+              <span class="sc-value" id="scorecard-invoice">0</span>
+              <span class="sc-label">Invoices</span>
+            </div>
+            <i class="fa-solid fa-angles-right sc-icon"></i>
+          </div>
         </div>
+
       </div>
 
       <div class="layout-grid">

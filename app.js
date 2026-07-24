@@ -1030,12 +1030,12 @@ function renderPendingScorecardAndDetails() {
   if (scorecardInvoice) scorecardInvoice.innerText = totalPendingInvoices;
   
   if (totalPendingPOs > 0) {
-    scorecardContainer.style.display = 'grid';
+    scorecardContainer.style.display = 'flex';
     detailsPanel.style.display = 'block';
     detailsContainer.innerHTML = detailsHtml;
   } else {
     // Show 0 scorecard
-    scorecardContainer.style.display = 'grid';
+    scorecardContainer.style.display = 'flex';
     detailsPanel.style.display = 'block';
     detailsContainer.innerHTML = `<div style="text-align:center; color:var(--success); padding: 15px; font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:2rem; display:block; margin-bottom:8px;"></i> All Caught Up! No pending Gate Entries.</div>`;
   }
