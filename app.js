@@ -780,7 +780,17 @@
       const header = records[0];
 
       // ── Vendor Details ──
-      document.getElementById('vendorPoNumber').value = header.vendorPoNumber || '';
+      // Inject PO number as an option if not already present (handles completed/filtered-out POs)
+      const poSel = document.getElementById('vendorPoNumber');
+      const poVal = header.vendorPoNumber || '';
+      if (poVal && ![...poSel.options].some(o => o.value === poVal)) {
+        const poOpt = document.createElement('option');
+        poOpt.value = poVal;
+        poOpt.text = poVal;
+        poSel.appendChild(poOpt);
+      }
+      poSel.value = poVal;
+
       document.getElementById('vendorName').value = header.vendorName || '';
 
       // PO Date
@@ -909,20 +919,10 @@
             <td>${r.sheetUrl ? `<a href="${r.sheetUrl}" target="_blank" style="color:#10b981; font-weight:600;"><i class="fa-solid fa-file-excel me-1"></i> Sheet</a>` : '-'}</td>
             <td>
               <button class="btn-action-sec" style="color:#2563eb; border-color:#2563eb;" onclick="editRecord('${r.grnNo}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-              <button class="btn-action-sec" onclick="deleteRecord('${r.grnNo}')"><i class="fa-solid fa-trash text-danger"></i> Delete</button>
             </td>
           </tr>`;
       });
       tbody.innerHTML = html;
-    }
-
-    async function deleteRecord(grnNo) {
-      if (!confirm(`Delete entry ${grnNo}?`)) return;
-      const res = await callBackend('deleteInwardEntryBatch', [grnNo]);
-      if (res.status === 'success') {
-        showToast(res.message, 'success');
-        loadInwardHistory(true);
-      }
     }
 
     function showToast(msg, type = 'info') {
