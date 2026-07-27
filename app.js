@@ -322,7 +322,7 @@
       }
     }
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxVxKzGFfGL6gWpOrfoohPFq6gjwXA7VKt6ivhicfPWzySNl59KJTVpCc3pT8PFEWUtvw/exec'; // New Web App URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwVSLVD3sGtbxhiPttdmcCzPRu4ShhpsEvaTW8vDuQosp0JnhORBIeNTHQkDzuVfouRvw/exec'; // New Web App URL (v2 - addReceivingOption)
 
     function switchTab(tab) {
       if (tab === 'form' && state.editMode) {
@@ -1056,6 +1056,110 @@ function renderPendingScorecardAndDetails() {
     scorecardContainer.style.display = 'flex';
     detailsPanel.style.display = 'block';
     detailsContainer.innerHTML = `<div style="text-align:center; color:var(--success); padding: 15px; font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:2rem; display:block; margin-bottom:8px;"></i> All Caught Up! No pending Gate Entries.</div>`;
+  }
+}
+
+// --- Add Receiving Person / Location Modal Logic ---
+let addReceivingModalInstance = null;
+let addReceivingCurrentType = null; // 'person' or 'location'
+
+function openAddReceivingModal(type) {
+  addReceivingCurrentType = type;
+
+  // Configure modal appearance
+  const isPerson = type === 'person';
+  const title    = isPerson ? 'Add Receiving Person' : 'Add Receiving Location';
+  const subtitle = isPerson ? 'नया प्राप्तकर्ता व्यक्ति जोड़ें' : 'नया प्राप्ति स्थान जोड़ें';
+  const label    = isPerson ? 'Person Name (व्यक्ति का नाम)' : 'Location Name (स्थान का नाम)';
+  const placeholder = isPerson ? 'e.g. Ramesh Kumar' : 'e.g. Export Packing Section';
+  const headerBg = isPerson
+    ? 'linear-gradient(135deg,#1e40af,#3b82f6)'
+    : 'linear-gradient(135deg,#065f46,#10b981)';
+  const btnBg = isPerson
+    ? 'linear-gradient(135deg,#1e40af,#3b82f6)'
+    : 'linear-gradient(135deg,#065f46,#10b981)';
+  const iconClass = isPerson ? 'fa-solid fa-user-plus' : 'fa-solid fa-location-dot';
+
+  document.getElementById('addReceivingModal-title').textContent   = title;
+  document.getElementById('addReceivingModal-subtitle').textContent = subtitle;
+  document.getElementById('addReceivingModal-label').textContent    = label;
+  document.getElementById('addReceivingModal-input').placeholder    = placeholder;
+  document.getElementById('addReceivingModal-input').value          = '';
+  document.getElementById('addReceivingModal-icon').style.background = headerBg;
+  document.getElementById('addReceivingModal-icon-i').className      = iconClass + ' ' + 'text-white';
+  document.getElementById('addReceivingModal-submit-btn').style.background = btnBg;
+  document.getElementById('addReceivingModal-error').style.display   = 'none';
+  document.getElementById('addReceivingModal-error').textContent      = '';
+
+  if (!addReceivingModalInstance) {
+    addReceivingModalInstance = new bootstrap.Modal(document.getElementById('addReceivingModal'));
+  }
+  addReceivingModalInstance.show();
+  setTimeout(() => document.getElementById('addReceivingModal-input').focus(), 350);
+}
+
+async function submitAddReceivingOption() {
+  const inputEl  = document.getElementById('addReceivingModal-input');
+  const errorEl  = document.getElementById('addReceivingModal-error');
+  const submitBtn = document.getElementById('addReceivingModal-submit-btn');
+  const value     = (inputEl.value || '').trim();
+
+  errorEl.style.display = 'none';
+  errorEl.textContent   = '';
+
+  if (!value) {
+    errorEl.textContent   = 'Please enter a name before adding.';
+    errorEl.style.display = 'block';
+    inputEl.focus();
+    return;
+  }
+
+  // Disable button to prevent double-click
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Saving...';
+
+  try {
+    const res = await callBackend('addReceivingOption', [addReceivingCurrentType, value]);
+    if (res.status === 'success') {
+      addReceivingModalInstance.hide();
+      showToast(`✅ "${res.addedValue}" added to list!`, 'success');
+
+      // Optimistically add to state + dropdown immediately
+      if (addReceivingCurrentType === 'person') {
+        if (!state.masterData.receivingPersons.includes(res.addedValue)) {
+          state.masterData.receivingPersons.push(res.addedValue);
+        }
+        const sel = document.getElementById('receivingPerson');
+        const opt = document.createElement('option');
+        opt.value = res.addedValue;
+        opt.text  = res.addedValue;
+        sel.appendChild(opt);
+        sel.value = res.addedValue;
+      } else {
+        if (!state.masterData.receivingLocations.includes(res.addedValue)) {
+          state.masterData.receivingLocations.push(res.addedValue);
+        }
+        const sel = document.getElementById('receivingLocation');
+        const opt = document.createElement('option');
+        opt.value = res.addedValue;
+        opt.text  = res.addedValue;
+        sel.appendChild(opt);
+        sel.value = res.addedValue;
+      }
+
+      // Also refresh master data in background to keep cache in sync
+      loadMasterDataInstant();
+    } else {
+      errorEl.textContent   = res.message || 'Failed to add. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  } catch (err) {
+    errorEl.textContent   = 'Network error. Please try again.';
+    errorEl.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    const isPerson = addReceivingCurrentType === 'person';
+    submitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Add to List';
   }
 }
 
