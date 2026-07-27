@@ -322,7 +322,7 @@
       }
     }
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwVSLVD3sGtbxhiPttdmcCzPRu4ShhpsEvaTW8vDuQosp0JnhORBIeNTHQkDzuVfouRvw/exec'; // New Web App URL (v2 - addReceivingOption)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz_-m61mGbuQk8245IDMoEuMRtPHo3nxA_NAno3ajkt6edSqJKoryXHQfAJrs6aOhdbSg/exec'; // v3 - list1 sheet fix + addReceivingOption
 
     function switchTab(tab) {
       if (tab === 'form' && state.editMode) {
