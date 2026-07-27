@@ -1,6 +1,6 @@
 // qc.js
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbxVxKzGFfGL6gWpOrfoohPFq6gjwXA7VKt6ivhicfPWzySNl59KJTVpCc3pT8PFEWUtvw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwVSLVD3sGtbxhiPttdmcCzPRu4ShhpsEvaTW8vDuQosp0JnhORBIeNTHQkDzuVfouRvw/exec'; // v2 - addReceivingOption
 
 let state = {
   pendingGRNs: [],
