@@ -322,7 +322,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbww8gvrVB4nftGbx2BzkIh04AqWcNB5PNSvywj9On_I2IzlADqy5pWlZ7Rw9KLTGQYXdg/exec'; // v3 - list1 sheet fix + addReceivingOption
+const API_URL = 'https://script.google.com/macros/s/AKfycbysdXtyv80tEBIYqHoEhBbzFjROToE_doMs2WdhnI7-L-ZKBCiait18cWLjrAMOmI0l/exec'; // v4
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {

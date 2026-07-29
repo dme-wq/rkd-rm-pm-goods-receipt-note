@@ -35,9 +35,14 @@
     <div class="list-header">
       <div>
         <div class="list-title">Pending Inspections</div>
-        <div class="list-sub">Latest 25 entries</div>
+        <div class="list-sub" id="list-sub-text">All Pending Entries</div>
       </div>
       <span class="badge-count" id="pending-count">—</span>
+    </div>
+
+    <div class="tab-container" style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button class="btn-tab active-tab" id="tab-pending" onclick="switchViewTab('pending')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;">Pending</button>
+      <button class="btn-tab" id="tab-archived" onclick="switchViewTab('archived')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #e2e8f0; color: #475569; font-weight: 600; cursor: pointer; transition: all 0.2s;">Archived</button>
     </div>
 
     <div id="loading-state" class="center-state">

@@ -1,6 +1,6 @@
 // qc.js
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbww8gvrVB4nftGbx2BzkIh04AqWcNB5PNSvywj9On_I2IzlADqy5pWlZ7Rw9KLTGQYXdg/exec'; // v3 - list1 sheet fix + addReceivingOption
+const API_URL = 'https://script.google.com/macros/s/AKfycbysdXtyv80tEBIYqHoEhBbzFjROToE_doMs2WdhnI7-L-ZKBCiait18cWLjrAMOmI0l/exec'; // v4
 
 let state = {
   pendingGRNs: [],
@@ -12,7 +12,8 @@ let state = {
   invoiceUrl: null,
   photoBase64: null,
   qcEditMode: false,
-  qcEditData: null
+  qcEditData: null,
+  currentTab: 'pending'
 };
 
 async function callBackend(funcName, params = []) {
@@ -100,25 +101,88 @@ async function loadQCData(force = false, autoSelectGrn = null) {
   }
 }
 
+function getArchivedGRNs() {
+  try {
+    return JSON.parse(localStorage.getItem('qc_archived_grns')) || [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function setArchivedGRNs(arr) {
+  localStorage.setItem('qc_archived_grns', JSON.stringify(arr));
+}
+
+window.switchViewTab = function(tab) {
+  state.currentTab = tab;
+  document.getElementById('tab-pending').classList.toggle('active-tab', tab === 'pending');
+  document.getElementById('tab-archived').classList.toggle('active-tab', tab === 'archived');
+  
+  if (tab === 'archived') {
+    document.getElementById('list-sub-text').innerText = 'Archived Entries';
+    document.getElementById('tab-pending').style.background = '#e2e8f0';
+    document.getElementById('tab-pending').style.color = '#475569';
+    document.getElementById('tab-archived').style.background = 'var(--primary)';
+    document.getElementById('tab-archived').style.color = 'white';
+  } else {
+    document.getElementById('list-sub-text').innerText = 'All Pending Entries';
+    document.getElementById('tab-archived').style.background = '#e2e8f0';
+    document.getElementById('tab-archived').style.color = '#475569';
+    document.getElementById('tab-pending').style.background = 'var(--primary)';
+    document.getElementById('tab-pending').style.color = 'white';
+  }
+  
+  renderCards();
+}
+
+window.toggleArchiveGRN = function(grnNo, event) {
+  event.stopPropagation();
+  let archived = getArchivedGRNs();
+  if (archived.includes(grnNo)) {
+    archived = archived.filter(g => g !== grnNo);
+  } else {
+    archived.push(grnNo);
+  }
+  setArchivedGRNs(archived);
+  renderCards();
+}
+
 function renderCards() {
   const container = document.getElementById('cards-container');
   container.innerHTML = '';
   
-  document.getElementById('pending-count').innerText = state.pendingGRNs.length;
+  const archived = getArchivedGRNs();
+  const displayGRNs = state.pendingGRNs.filter(grn => {
+    if (state.currentTab === 'archived') {
+      return archived.includes(grn.grnNo);
+    } else {
+      return !archived.includes(grn.grnNo);
+    }
+  });
 
-  if (state.pendingGRNs.length === 0) {
+  document.getElementById('pending-count').innerText = displayGRNs.length;
+
+  if (displayGRNs.length === 0) {
     document.getElementById('empty-state').style.display = 'flex';
+    if (state.currentTab === 'archived') {
+      document.querySelector('#empty-state p').innerText = 'No archived quality checks found.';
+    } else {
+      document.querySelector('#empty-state p').innerText = 'No pending quality checks found.';
+    }
     return;
   }
   document.getElementById('empty-state').style.display = 'none';
 
-  state.pendingGRNs.forEach((grn, idx) => {
+  displayGRNs.forEach((grn, idx) => {
     const card = document.createElement('div');
     card.className = 'grn-card';
     
     const itemsHtml = (grn.items || []).map(i =>
       `<span class="tag">${i.name}${i.qty ? ` (${i.qty} ${i.unit})` : ''}</span>`
     ).join('');
+
+    const archiveIcon = state.currentTab === 'pending' ? 'fa-box-archive' : 'fa-box-open';
+    const archiveText = state.currentTab === 'pending' ? 'Archive' : 'Unarchive';
 
     card.innerHTML = `
       <div class="card-accent-bar"></div>
@@ -133,10 +197,15 @@ function renderCards() {
           <span class="card-meta-item"><i class="fa-solid fa-hashtag"></i> ${grn.poNumber || 'N/A'}</span>
         </div>
         <div class="tags-container">${itemsHtml}</div>
-        <button class="btn-card-action" onclick='openFormById("${grn.grnNo}")'>
-          <i class="fa-solid fa-clipboard-check"></i> Start Inspection
-          <i class="fa-solid fa-arrow-right ms-1"></i>
-        </button>
+        <div style="display:flex; gap: 8px;">
+          <button class="btn-card-action" style="flex: 1;" onclick='openFormById("${grn.grnNo}")'>
+            <i class="fa-solid fa-clipboard-check"></i> Start Inspection
+            <i class="fa-solid fa-arrow-right ms-1"></i>
+          </button>
+          <button class="btn-card-action" style="background: #e2e8f0; color: #475569; padding: 0 15px; border-radius: 8px; flex: none;" onclick='toggleArchiveGRN("${grn.grnNo}", event)' title="${archiveText}">
+            <i class="fa-solid ${archiveIcon}"></i>
+          </button>
+        </div>
       </div>
     `;
     container.appendChild(card);
@@ -409,7 +478,7 @@ async function submitForm() {
     if (data.status === 'success') {
       document.getElementById('success-overlay').style.display = 'flex';
       setTimeout(() => {
-        window.location.reload();
+        window.location.href = window.location.pathname;
       }, 2000);
     } else {
       alert('Submit failed: ' + data.message);
