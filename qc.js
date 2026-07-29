@@ -201,12 +201,12 @@ function renderCards() {
           <span class="card-meta-item"><i class="fa-solid fa-hashtag"></i> ${grn.poNumber || 'N/A'}</span>
         </div>
         <div class="tags-container">${itemsHtml}</div>
-        <div style="display:flex; gap: 8px;">
-          <button class="btn-card-action" style="flex: 1;" onclick='openFormById("${grn.grnNo}")'>
-            <i class="fa-solid fa-clipboard-check"></i> Start Inspection
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="btn-card-action" style="padding: 12px 4px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 5px;" onclick='openFormById("${grn.grnNo}")'>
+            <i class="fa-solid fa-clipboard-check"></i> <span>Inspect</span>
             <i class="fa-solid fa-arrow-right ms-1"></i>
           </button>
-          <button class="btn-card-action" style="background: ${archiveBg}; color: white; padding: 0 16px; border-radius: 8px; flex: none; font-weight: 600; font-size: 0.9rem; box-shadow: ${archiveShadow}; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick='toggleArchiveGRN("${grn.grnNo}", event)' onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          <button class="btn-card-action" style="background: ${archiveBg}; color: white; padding: 12px 4px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; box-shadow: ${archiveShadow}; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 5px;" onclick='toggleArchiveGRN("${grn.grnNo}", event)' onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
             <i class="fa-solid ${archiveIcon}"></i> <span>${archiveText}</span>
           </button>
         </div>
