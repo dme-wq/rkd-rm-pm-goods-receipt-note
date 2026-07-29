@@ -181,8 +181,12 @@ function renderCards() {
       `<span class="tag">${i.name}${i.qty ? ` (${i.qty} ${i.unit})` : ''}</span>`
     ).join('');
 
-    const archiveIcon = state.currentTab === 'pending' ? 'fa-box-archive' : 'fa-box-open';
-    const archiveText = state.currentTab === 'pending' ? 'Archive' : 'Unarchive';
+    const isPendingTab = state.currentTab === 'pending';
+    const archiveIcon = isPendingTab ? 'fa-box-archive' : 'fa-box-open';
+    const archiveText = isPendingTab ? 'Archive' : 'Unarchive';
+    
+    const archiveBg = isPendingTab ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #10b981, #059669)';
+    const archiveShadow = isPendingTab ? '0 4px 12px rgba(245, 158, 11, 0.3)' : '0 4px 12px rgba(16, 185, 129, 0.3)';
 
     card.innerHTML = `
       <div class="card-accent-bar"></div>
@@ -202,8 +206,8 @@ function renderCards() {
             <i class="fa-solid fa-clipboard-check"></i> Start Inspection
             <i class="fa-solid fa-arrow-right ms-1"></i>
           </button>
-          <button class="btn-card-action" style="background: #e2e8f0; color: #475569; padding: 0 15px; border-radius: 8px; flex: none;" onclick='toggleArchiveGRN("${grn.grnNo}", event)' title="${archiveText}">
-            <i class="fa-solid ${archiveIcon}"></i>
+          <button class="btn-card-action" style="background: ${archiveBg}; color: white; padding: 0 16px; border-radius: 8px; flex: none; font-weight: 600; font-size: 0.9rem; box-shadow: ${archiveShadow}; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick='toggleArchiveGRN("${grn.grnNo}", event)' onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <i class="fa-solid ${archiveIcon}"></i> <span>${archiveText}</span>
           </button>
         </div>
       </div>
