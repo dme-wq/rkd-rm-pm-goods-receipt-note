@@ -337,6 +337,36 @@
             </div>
           </div>
 
+          <!-- Checklist Selection Card -->
+          <div class="card-panel" style="border: 2px solid #7c3aed; border-radius: 14px; background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);">
+            <div class="card-title" style="background: linear-gradient(135deg, #7c3aed, #a855f7); border-radius: 10px 10px 0 0; margin: -1.25rem -1.25rem 1rem -1.25rem; padding: 0.85rem 1.25rem; color: #fff;">
+              <span><i class="fa-solid fa-clipboard-list me-2"></i> Quality Checklists <small style="font-size:0.78em; opacity:0.85; font-weight:400;">(क्वालिटी चेकलिस्ट)</small></span>
+              <div style="display:flex; gap:6px;">
+                <button type="button" onclick="selectAllChecklists()" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; border-radius:6px; padding:3px 10px; font-size:0.8rem; cursor:pointer;">All</button>
+                <button type="button" onclick="clearAllChecklists()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:6px; padding:3px 10px; font-size:0.8rem; cursor:pointer;">Clear</button>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div>
+                <label style="font-size:0.82rem; color:#6d28d9; font-weight:600; margin-bottom:6px; display:block;"><i class="fa-solid fa-list-check me-1"></i> Select Checklists to Generate PDF <small style="color:#9ca3af; font-weight:400;">(multiple select)</small></label>
+                <div id="checklist-multiselect-container" style="border: 1.5px solid #c4b5fd; border-radius: 10px; background: #fff; max-height: 200px; overflow-y: auto; padding: 6px;">
+                  <div id="checklist-options-list" style="display:flex; flex-direction:column; gap:2px;">
+                    <div style="text-align:center; color:#9ca3af; padding:12px; font-size:0.85rem;">
+                      <i class="fa-solid fa-spinner fa-spin me-1"></i> Loading checklists...
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Selected Tags Display -->
+              <div id="checklist-selected-tags" style="display:flex; flex-wrap:wrap; gap:5px; min-height:24px;"></div>
+              <div style="font-size:0.78rem; color:#7c3aed; font-weight:500;">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                <span id="checklist-selected-count">0 checklists selected</span>
+                — PDFs will be generated &amp; sent via WhatsApp
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>

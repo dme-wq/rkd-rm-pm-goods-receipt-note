@@ -10,14 +10,16 @@ const state = {
     poMap: {},
     gateEntryInvoicesMap: {},
     passcode: '1122',
-    nextGrnNo: 'RKD/GRN/2026/2173'
+    nextGrnNo: 'RKD/GRN/2026/2173',
+    checklistTabNames: []
   },
   currentPoItems: [],
   photoBase64: null,
   historyRecords: [],
   filteredHistory: [],
   editMode: false,
-  editGrnNo: null
+  editGrnNo: null,
+  selectedChecklists: [] // Array of { tabName, range }
 };
 
 let confirmModalObj = null;
@@ -151,8 +153,101 @@ function applyMasterDataToUI(data) {
     document.getElementById('top-grn-span').innerText = grn;
   }
 
+  // Populate Checklist Multi-Select
+  renderChecklistOptions(state.masterData.checklistTabNames || []);
+
   // Render pending scorecard and details
   renderPendingScorecardAndDetails();
+}
+
+/* ─── Checklist Multi-Select Functions ─── */
+function renderChecklistOptions(checklistTabNames) {
+  const listEl = document.getElementById('checklist-options-list');
+  if (!listEl) return;
+
+  if (!checklistTabNames || checklistTabNames.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; color:#9ca3af; padding:12px; font-size:0.85rem;"><i class="fa-solid fa-circle-exclamation me-1"></i> No checklists available</div>';
+    return;
+  }
+
+  let html = '';
+  checklistTabNames.forEach((cl, idx) => {
+    const isSelected = state.selectedChecklists.some(s => s.tabName === cl.tabName);
+    html += `
+      <label id="cl-option-${idx}" onclick="toggleChecklistSelection('${cl.tabName.replace(/'/g,"\\'")}',${'\'' + cl.range + '\''},'cl-option-${idx}')"
+        style="display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:7px; cursor:pointer;
+               background:${isSelected ? '#f3e8ff' : 'transparent'};
+               border:1px solid ${isSelected ? '#a855f7' : 'transparent'};
+               transition: all 0.15s; user-select:none;"
+        onmouseover="if(!this.classList.contains('cl-active'))this.style.background='#faf5ff'" 
+        onmouseout="if(!this.classList.contains('cl-active'))this.style.background='transparent'">
+        <input type="checkbox" id="cl-cb-${idx}" ${isSelected ? 'checked' : ''}
+          style="width:15px; height:15px; accent-color:#7c3aed; cursor:pointer; flex-shrink:0;"
+          onclick="event.stopPropagation(); toggleChecklistSelection('${cl.tabName.replace(/'/g,"\\'")}',${'\'' + cl.range + '\''},'cl-option-${idx}')">
+        <span style="font-size:0.84rem; font-weight:500; color:#374151; line-height:1.3;">${cl.tabName}</span>
+        <span style="margin-left:auto; font-size:0.73rem; color:#a855f7; font-family:monospace; background:#f3e8ff; padding:1px 5px; border-radius:4px;">${cl.range}</span>
+      </label>`;
+  });
+  listEl.innerHTML = html;
+  updateChecklistCountBadge();
+}
+
+function toggleChecklistSelection(tabName, range, optionId) {
+  const existingIdx = state.selectedChecklists.findIndex(s => s.tabName === tabName);
+  if (existingIdx >= 0) {
+    state.selectedChecklists.splice(existingIdx, 1);
+  } else {
+    state.selectedChecklists.push({ tabName, range });
+  }
+  // Update visual state
+  const labelEl = document.getElementById(optionId);
+  if (labelEl) {
+    const isNowSelected = state.selectedChecklists.some(s => s.tabName === tabName);
+    const cbEl = labelEl.querySelector('input[type=checkbox]');
+    if (cbEl) cbEl.checked = isNowSelected;
+    labelEl.style.background = isNowSelected ? '#f3e8ff' : 'transparent';
+    labelEl.style.border = `1px solid ${isNowSelected ? '#a855f7' : 'transparent'}`;
+  }
+  updateChecklistCountBadge();
+  renderChecklistTags();
+}
+
+function selectAllChecklists() {
+  const allTabs = state.masterData.checklistTabNames || [];
+  state.selectedChecklists = allTabs.map(cl => ({ tabName: cl.tabName, range: cl.range }));
+  renderChecklistOptions(allTabs);
+  renderChecklistTags();
+}
+
+function clearAllChecklists() {
+  state.selectedChecklists = [];
+  renderChecklistOptions(state.masterData.checklistTabNames || []);
+  renderChecklistTags();
+}
+
+function updateChecklistCountBadge() {
+  const countEl = document.getElementById('checklist-selected-count');
+  if (countEl) {
+    const n = state.selectedChecklists.length;
+    countEl.textContent = `${n} checklist${n !== 1 ? 's' : ''} selected`;
+  }
+}
+
+function renderChecklistTags() {
+  const tagsEl = document.getElementById('checklist-selected-tags');
+  if (!tagsEl) return;
+  if (state.selectedChecklists.length === 0) {
+    tagsEl.innerHTML = '';
+    return;
+  }
+  tagsEl.innerHTML = state.selectedChecklists.map(cl =>
+    `<span style="display:inline-flex; align-items:center; gap:4px; background:#7c3aed; color:#fff;
+       border-radius:20px; padding:2px 10px; font-size:0.76rem; font-weight:600;">
+       <i class="fa-solid fa-clipboard-check" style="font-size:0.7rem;"></i>
+       ${cl.tabName}
+     </span>`
+  ).join('');
+  updateChecklistCountBadge();
 }
 
 function loadMasterDataInstant() {
@@ -322,7 +417,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwti_gAO9v8YmZcGP-gkbHEW-RMKeYFTBb9NvXD8AbtJvkLMin5FTyD1mdKBIWzK9T9fw/exec'; // v5
+const API_URL = 'https://script.google.com/macros/s/AKfycbzn3qSXH_-WW5S2c4ZEo7fND19vLT1RWRTMw2atQEMWiATg_N9U57kV99Sleh7q7RZKEw/exec'; // v6 - Checklist PDF + WhatsApp
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {
@@ -607,7 +702,8 @@ async function proceedSubmission() {
       grnNo: state.editMode ? state.editGrnNo : state.masterData.nextGrnNo
     },
     items: state.currentPoItems.filter(item => item.isSelected !== false),
-    photoBase64: state.photoBase64
+    photoBase64: state.photoBase64,
+    selectedChecklistTabs: state.selectedChecklists // ← Checklist tabs to generate PDFs
   };
 
   const actionName = state.editMode ? 'updateInwardEntry' : 'saveInwardEntry';
@@ -672,6 +768,11 @@ function resetFormOptimistically() {
   if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save & Submit Inward Entry';
 
   renderItemsTable([]);
+
+  // Reset checklist selection
+  state.selectedChecklists = [];
+  renderChecklistOptions(state.masterData.checklistTabNames || []);
+  renderChecklistTags();
 
   // Optimistically increment GRN NO
   if (state.masterData && state.masterData.nextGrnNo) {
