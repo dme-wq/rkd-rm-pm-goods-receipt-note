@@ -671,6 +671,19 @@ function openConfirmationModal() {
     return;
   }
 
+  // ✅ Checklist selection is mandatory
+  if (state.selectedChecklists.length === 0) {
+    showToast('⚠️ Quality Checklist required! Please select at least one checklist before submitting.', 'error');
+    // Scroll to checklist card
+    const clCard = document.getElementById('checklist-multiselect-container');
+    if (clCard) {
+      clCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      clCard.style.border = '2px solid #ef4444';
+      setTimeout(() => { clCard.style.border = '1.5px solid #c4b5fd'; }, 2500);
+    }
+    return;
+  }
+
   document.getElementById('confirm-grn').innerText = state.editMode ? state.editGrnNo : state.masterData.nextGrnNo;
   document.getElementById('confirm-po').innerText = document.getElementById('vendorPoNumber').value || '-';
   document.getElementById('confirm-invoice').innerText = document.getElementById('vendorInvoiceNumber').value || '-';
