@@ -417,7 +417,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzn3qSXH_-WW5S2c4ZEo7fND19vLT1RWRTMw2atQEMWiATg_N9U57kV99Sleh7q7RZKEw/exec'; // v6 - Checklist PDF + WhatsApp
+const API_URL = 'https://script.google.com/macros/s/AKfycbybtunc6JtlhCbGuAjUSOynqKtngn6wr4kuo_ZV1pnW8PLulMXLq21djpuKN3CBDY6J0A/exec'; // v7 - Checklist mandatory + text wrap
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {
