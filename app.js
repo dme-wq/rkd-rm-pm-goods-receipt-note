@@ -570,7 +570,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbxx99k33Dr26m6qKYXYe6DgDN7jivOgy8IXGw59KoZGQPTMA8L9DNnDLhWttgoDr6zbhg/exec'; // v10 - Clickable Checklist Links + PDF Logo/Scale fixes
+const API_URL = 'https://script.google.com/macros/s/AKfycbzYShY6WgerxEeDdg3L3cmHxoGAcFgCdQWLi5rBorbpu8b6QUdSIUqUm22LxcU0hz22mA/exec'; // v11 - Landscape PDF + Area Fit
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {
