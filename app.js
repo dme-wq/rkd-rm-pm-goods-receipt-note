@@ -570,7 +570,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbybtunc6JtlhCbGuAjUSOynqKtngn6wr4kuo_ZV1pnW8PLulMXLq21djpuKN3CBDY6J0A/exec'; // v7 - Checklist mandatory + text wrap
+const API_URL = 'https://script.google.com/macros/s/AKfycbxaFTNRJEzW_qBNNHmfAz0WrSRGa9FpsCOpoT3q5LAhi6qc4e81_7ofgNBzR0ZJpZgeDg/exec'; // v8 - Checklists Logo + AI column
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {
