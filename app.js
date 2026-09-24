@@ -250,6 +250,159 @@ function renderChecklistTags() {
   updateChecklistCountBadge();
 }
 
+/* ─── Checklist Search Filter ─── */
+function filterChecklistSearch(query) {
+  const listEl = document.getElementById('checklist-options-list');
+  if (!listEl) return;
+  const q = query.trim().toLowerCase();
+  const labels = listEl.querySelectorAll('label[id^="cl-option-"]');
+  let visibleCount = 0;
+  labels.forEach(lbl => {
+    const text = lbl.querySelector('span') ? lbl.querySelector('span').textContent.toLowerCase() : '';
+    const show = !q || text.includes(q);
+    lbl.style.display = show ? 'flex' : 'none';
+    if (show) visibleCount++;
+  });
+  // Show no-results message
+  let noRes = listEl.querySelector('.cl-no-results');
+  if (visibleCount === 0 && q) {
+    if (!noRes) {
+      noRes = document.createElement('div');
+      noRes.className = 'cl-no-results';
+      noRes.style.cssText = 'text-align:center;color:#9ca3af;padding:10px;font-size:0.82rem;';
+      noRes.innerHTML = '<i class="fa-solid fa-magnifying-glass me-1"></i>No matching checklists';
+      listEl.appendChild(noRes);
+    }
+    noRes.style.display = 'block';
+  } else if (noRes) {
+    noRes.style.display = 'none';
+  }
+}
+
+/* ─── AI Auto-Match: Learning System ─── */
+const CHECKLIST_LEARNING_KEY = 'rkd_checklist_learning_v1';
+
+function getLearnedChecklists(keywords) {
+  try {
+    const data = JSON.parse(localStorage.getItem(CHECKLIST_LEARNING_KEY) || '{}');
+    const scores = {}; // { tabName: score }
+    keywords.forEach(kw => {
+      if (data[kw]) {
+        Object.entries(data[kw]).forEach(([tabName, count]) => {
+          scores[tabName] = (scores[tabName] || 0) + count;
+        });
+      }
+    });
+    // Return tabNames sorted by score (highest first), threshold >= 1
+    return Object.entries(scores)
+      .filter(([, s]) => s >= 1)
+      .sort((a, b) => b[1] - a[1])
+      .map(([tabName]) => tabName);
+  } catch (e) { return []; }
+}
+
+function learnChecklistSelection() {
+  try {
+    if (!state.selectedChecklists.length || !state.currentPoItems.length) return;
+    const data = JSON.parse(localStorage.getItem(CHECKLIST_LEARNING_KEY) || '{}');
+    const keywords = extractItemKeywords(state.currentPoItems);
+    keywords.forEach(kw => {
+      if (!data[kw]) data[kw] = {};
+      state.selectedChecklists.forEach(cl => {
+        data[kw][cl.tabName] = (data[kw][cl.tabName] || 0) + 1;
+      });
+    });
+    localStorage.setItem(CHECKLIST_LEARNING_KEY, JSON.stringify(data));
+  } catch (e) { console.warn('Learning save error:', e); }
+}
+
+function extractItemKeywords(items) {
+  const stopWords = new Set(['the','and','for','with','of','in','on','at','to','a','an','is','are','by','or','from','that','this','it','as','per']);
+  const keywords = new Set();
+  items.forEach(item => {
+    const name = String(item.rmPmName || '') + ' ' + String(item.productCode || '');
+    name.toLowerCase()
+      .split(/[\s\-\/,_()&]+/)
+      .filter(w => w.length >= 3 && !stopWords.has(w) && isNaN(w))
+      .forEach(w => keywords.add(w));
+  });
+  return Array.from(keywords);
+}
+
+function autoMatchChecklistsFromItems() {
+  const allChecklists = state.masterData.checklistTabNames || [];
+  if (!allChecklists.length || !state.currentPoItems.length) return;
+
+  const keywords = extractItemKeywords(state.currentPoItems);
+  if (!keywords.length) return;
+
+  // 1. Direct substring match: keyword in checklist name
+  const directMatches = new Set();
+  allChecklists.forEach(cl => {
+    const clLower = cl.tabName.toLowerCase();
+    keywords.forEach(kw => {
+      if (clLower.includes(kw) || kw.includes(clLower.split(' ')[0])) {
+        directMatches.add(cl.tabName);
+      }
+    });
+  });
+
+  // 2. Learning-based match
+  const learnedNames = new Set(getLearnedChecklists(keywords));
+
+  // 3. Combine & deduplicate
+  const allMatched = new Set([...directMatches, ...learnedNames]);
+  if (!allMatched.size) return;
+
+  // Select matched checklists (only if not already manually set)
+  const toAutoSelect = allChecklists.filter(cl => allMatched.has(cl.tabName));
+  if (!toAutoSelect.length) return;
+
+  state.selectedChecklists = toAutoSelect.map(cl => ({ tabName: cl.tabName, range: cl.range, autoMatched: true }));
+  renderChecklistOptions(allChecklists);
+  renderChecklistTags();
+
+  // Show AI notice
+  const noticeEl = document.getElementById('checklist-ai-notice');
+  const noticeText = document.getElementById('checklist-ai-notice-text');
+  if (noticeEl && noticeText) {
+    const names = toAutoSelect.map(c => c.tabName).join(', ');
+    noticeText.textContent = `Auto-selected ${toAutoSelect.length} checklist(s) based on items: ${names}. Please verify & adjust if needed.`;
+    noticeEl.style.display = 'block';
+  }
+}
+
+function scrollToChecklists() {
+  const clCard = document.getElementById('checklist-multiselect-container');
+  if (clCard) clCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function populateConfirmChecklists() {
+  const listEl = document.getElementById('confirm-checklists-list');
+  const autoBadge = document.getElementById('confirm-checklists-auto-badge');
+  if (!listEl) return;
+
+  const hasAutoMatched = state.selectedChecklists.some(c => c.autoMatched);
+  if (autoBadge) autoBadge.style.display = hasAutoMatched ? 'inline' : 'none';
+
+  if (!state.selectedChecklists.length) {
+    listEl.innerHTML = '<span style="color:#ef4444;">⚠️ No checklists selected</span>';
+    return;
+  }
+
+  listEl.innerHTML = state.selectedChecklists.map(cl => `
+    <div style="display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #e9d5ff;">
+      <i class="fa-solid fa-clipboard-check" style="color:#7c3aed; font-size:0.8rem; flex-shrink:0;"></i>
+      <span style="font-weight:600; color:#374151; flex:1;">${cl.tabName}</span>
+      <span style="font-family:monospace; font-size:0.72rem; color:#a855f7; background:#f3e8ff; padding:1px 5px; border-radius:4px; flex-shrink:0;">${cl.range}</span>
+      ${cl.autoMatched
+        ? '<span style="font-size:0.68rem; background:#7c3aed; color:#fff; border-radius:10px; padding:1px 6px; flex-shrink:0;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</span>'
+        : '<span style="font-size:0.68rem; background:#10b981; color:#fff; border-radius:10px; padding:1px 6px; flex-shrink:0;">Manual</span>'
+      }
+    </div>
+  `).join('');
+}
+
 function loadMasterDataInstant() {
   // 1. Read local cache immediately (only on first load)
   const cached = localStorage.getItem(CACHE_KEY_MASTER);
@@ -594,6 +747,9 @@ function renderItemsTable(items) {
         `;
   });
   tbody.innerHTML = html;
+
+  // 🤖 Trigger AI auto-match after items are rendered
+  setTimeout(() => autoMatchChecklistsFromItems(), 100);
 }
 
 function syncBillToStoreQty(index) {
@@ -684,6 +840,9 @@ function openConfirmationModal() {
     return;
   }
 
+  // 🧠 Learn from this selection (update localStorage)
+  learnChecklistSelection();
+
   document.getElementById('confirm-grn').innerText = state.editMode ? state.editGrnNo : state.masterData.nextGrnNo;
   document.getElementById('confirm-po').innerText = document.getElementById('vendorPoNumber').value || '-';
   document.getElementById('confirm-invoice').innerText = document.getElementById('vendorInvoiceNumber').value || '-';
@@ -693,6 +852,9 @@ function openConfirmationModal() {
 
   const photoStatus = state.photoBase64 ? '<span class="text-success"><i class="fa-solid fa-check-circle me-1"></i> Attached (Will save to Drive)</span>' : '<span class="text-muted">No photo attached</span>';
   document.getElementById('confirm-photo-status').innerHTML = photoStatus;
+
+  // 📋 Populate checklists in modal
+  populateConfirmChecklists();
 
   if (confirmModalObj) confirmModalObj.show();
   else proceedSubmission();
