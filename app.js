@@ -570,7 +570,7 @@ function toggleItemsTableFullscreen() {
   }
 }
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzYShY6WgerxEeDdg3L3cmHxoGAcFgCdQWLi5rBorbpu8b6QUdSIUqUm22LxcU0hz22mA/exec'; // v12 - Center PDF & Logo Gap
+const API_URL = 'https://script.google.com/macros/s/AKfycby9_k1AA7jDj3gab2fg-4SWsTiaPKJ79H6eFNhjXxNk3h9E8Fp7vvSf0CpuPlpyXdWjLw/exec'; // v13 - Center PDF & Logo Gap
 
 function switchTab(tab) {
   if (tab === 'form' && state.editMode) {
